@@ -13,7 +13,7 @@ from datetime import datetime
 
 from biological_age import calculate_biological_age, simulate_optimized_age
 from health_simulator import project_health_trajectory, calculate_life_expectancy_bonus
-from recommendation_engine import get_ai_recommendations
+from recommendation_engine import get_ai_recommendations, API_KEY
 from report_generator import create_pdf_report
 from vision_analyzer import analyze_face_image
 
@@ -356,7 +356,7 @@ with tab1:
                 if st.button("🔍 Scan My Face", use_container_width=True):
                     with st.spinner("Analyzing facial features..."):
                         bytes_data = img_file.getvalue()
-                        results = analyze_face_image(bytes_data)
+                        results = analyze_face_image(bytes_data, API_KEY)
                         st.session_state.vision_results = results
                 
                 if st.session_state.vision_results:
@@ -377,7 +377,10 @@ with tab1:
                         <div style="font-size:0.8rem; text-transform:uppercase; color:var(--dz-primary); font-weight:700; margin-bottom:5px;">
                             Strict Facial Insight
                         </div>
-                        {v.get('summary', '')}
+                        <div style="font-size:1.1rem; font-weight:600; margin-bottom:5px;">{v.get('summary', '')}</div>
+                        <div style="font-size:0.9rem; color:var(--dz-text);">
+                            <strong>Skin Analysis:</strong> {v.get('skin_details', 'N/A')}
+                        </div>
                     </div>
                     <p style="font-size:0.75rem; color:gray; margin-top:10px;">
                         ⚠️ This analysis is based **strictly** on facial features and is not a medical diagnosis.
