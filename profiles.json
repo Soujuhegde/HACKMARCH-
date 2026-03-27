@@ -1,0 +1,19 @@
+{
+    "default_user": {
+        "age": 32,
+        "weight_kg": 62.0,
+        "height_cm": 163,
+        "sleep_hours": 5.5,
+        "steps_per_day": 3200,
+        "resting_hr": 82,
+        "systolic_bp": 128,
+        "diastolic_bp": 84,
+        "smoker": false,
+        "packs_per_day": 0.0,
+        "stress_level": 8,
+        "exercise_min_week": 40,
+        "diet_quality": 5,
+        "alcohol_units_week": 4,
+        "last_updated": "2026-03-27T17:52:45.320789"
+    }
+}
