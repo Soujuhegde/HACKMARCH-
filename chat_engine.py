@@ -69,62 +69,57 @@ def generate_chat_response(messages: list, context_data: dict) -> str:
             if candidates:
                 return candidates[0]["content"]["parts"][0]["text"]
             return "I'm sorry, I couldn't generate a response."
-    except urllib.error.HTTPError as e:
-        if e.code == 429:
-            last_msg = messages[-1]["content"].lower()
-            if "diet" in last_msg or "food" in last_msg or "road" in last_msg:
-                return ("Here are some diet recommendations based on your profile:\n\n"
-                        "- Try adopting a **Mediterranean-style diet** (high in vegetables, whole grains, and lean proteins).\n"
-                        "- Reduce ultra-processed foods and sugary drinks.\n"
-                        "- Drink **2-3 liters of water** a day to improve your metabolic goals.\n\n"
-                        "*(Note: Always consult a dietitian for medical advice).*")
-            elif "exercise" in last_msg or "workout" in last_msg:
-                return ("Here are some exercise recommendations for you!\n\n"
-                        "- Start with **150 minutes** of moderate aerobic activity per week (like brisk walking).\n"
-                        "- Combine that with **2 days of strength training** to lower your cardiovascular risks.\n"
-                        "- Stretch daily to improve flexibility and reduce stress.\n\n"
-                        "*(Note: Please consult a doctor before starting new exercises).*")
-            elif "sleep" in last_msg:
-                return ("Here are some tips to improve your sleep quality:\n\n"
-                        "- Aim for **7-9 hours** per night.\n"
-                        "- Keep your room cool (65\u00b0F / 18\u00b0C) and dark.\n"
-                        "- Avoid screens an hour before bed.\n"
-                        "- This will significantly help your cognitive health!\n\n"
-                        "*(Note: Consult a physician if insomnia persists).*")
-            elif "result" in last_msg or "explain" in last_msg or "risk" in last_msg:
-                return (f"Here's a summary of your health data:\n\n"
-                        f"- **Biological Age:** {context_data.get('biological_age')} (vs actual age of {context_data.get('age')})\n"
-                        f"- **Cardio Risk Score:** {context_data.get('cardio_risk')}/100\n"
-                        f"- **Metabolic Risk Score:** {context_data.get('metabolic_risk')}/100\n\n"
-                        f"Lowering your stress and improving sleep are the strongest levers to reverse this trajectory.\n\n"
-                        f"*(Disclaimer: This is not a medical diagnosis. Please consult a doctor.)*")
-            elif "smok" in last_msg or "tobacco" in last_msg or "cigarette" in last_msg:
-                return ("Here are some tips to help quit smoking:\n\n"
-                        "- Set a **quit date** and tell friends/family for accountability.\n"
-                        "- Try **nicotine replacement therapy** (patches, gum) — consult your doctor first.\n"
-                        "- Identify your **triggers** and replace the habit with healthy alternatives.\n"
-                        "- Stay active — exercise reduces cravings.\n"
-                        "- Consider support groups or counseling.\n\n"
-                        "*(Note: Please consult a healthcare provider for a personalized quit plan.)*")
-            elif "stress" in last_msg or "anxiety" in last_msg or "mental" in last_msg:
-                return ("Here are some strategies to manage stress:\n\n"
-                        "- Practice **deep breathing exercises** or meditation (even 5 minutes helps).\n"
-                        "- Get regular physical activity.\n"
-                        "- Maintain a consistent **sleep schedule**.\n"
-                        "- Limit caffeine and alcohol intake.\n"
-                        "- Talk to someone you trust about your feelings.\n\n"
-                        "*(Note: If you're struggling, please reach out to a mental health professional.)*")
-            else:
-                return (f"Based on your profile, here's what I can share:\n\n"
-                        f"- **Chronological Age:** {context_data.get('age')}\n"
-                        f"- **Biological Age:** {context_data.get('biological_age')}\n\n"
-                        f"Focus on improving your most critical lifestyle factor (often sleep or stress management) for the best results.\n\n"
-                        f"Feel free to ask me about **diet**, **exercise**, **sleep**, or **your results**!\n\n"
-                        f"*(Please consult a doctor for serious health concerns.)*")
-        
-        err_msg = e.read().decode('utf-8')
-        print(f"Gemini API Error: {e.code} - {err_msg}")
-        return "I'm temporarily unavailable. Please try again later. (API Error)"
     except Exception as e:
-        print(f"Chat Engine Error: {str(e)}")
-        return "An unexpected error occurred. Please try again."
+        # Fallback to context-aware logic for ANY API issue (429, 403, 404, etc.)
+        last_msg = messages[-1]["content"].lower()
+        if any(k in last_msg for k in ["diet", "food", "nutrition", "eat", "meal"]):
+            return (f"Regarding your diet and Metabolic Risk of {context_data.get('metabolic_risk')}/100:\n\n"
+                    "- Try a **Mediterranean-style diet** (high in vegetables, whole grains, and lean proteins).\n"
+                    "- Reduce ultra-processed foods and sugary drinks.\n"
+                    "- Drink **2-3 liters of water** a day.\n"
+                    "- Focusing on low-glycemic foods is highly recommended for your profile.\n\n"
+                    "*(Note: Always consult a dietitian for medical advice).*")
+        elif any(k in last_msg for k in ["exercise", "workout", "gym", "walk", "run", "active", "sport"]):
+            return (f"For your heart health and Cardiovascular Risk of {context_data.get('cardio_risk')}/100:\n\n"
+                    "- Aim for **150 minutes** of moderate aerobic activity per week (like brisk walking).\n"
+                    "- Add **2 days of strength training** to improve metabolic health.\n"
+                    "- Stretch daily to reduce stress.\n\n"
+                    "*(Note: Please consult a doctor before starting new exercises).*")
+        elif "sleep" in last_msg:
+            return ("Here are some tips to improve your sleep quality:\n\n"
+                    f"- Current habits: {context_data.get('sleep')} hours. Aim for **7.5 to 8 hours** per night.\n"
+                    "- Keep your room cool (65\u00b0F / 18\u00b0C) and dark.\n"
+                    "- Avoid screens an hour before bed.\n\n"
+                    "*(Note: Consult a physician if insomnia persists).*")
+        elif any(k in last_msg for k in ["heart", "cardio", "bp", "blood pressure", "hypertension"]):
+            return (f"Regarding your Cardiovascular Risk ({context_data.get('cardio_risk')}/100):\n\n"
+                    "- **Monitor Blood Pressure:** Aim for a target below 120/80 mmHg.\n"
+                    "- **Aerobic Exercise:** 30 mins of brisk walking daily is highly effective.\n"
+                    "- **Sodium Intake:** Lowering salt helps improve your blood pressure profile.\n\n"
+                    "*(Note: Cardiovascular concerns require professional medical monitoring.)*")
+        elif any(k in last_msg for k in ["result", "explain", "risk", "biological", "age"]):
+            return (f"Here's a summary of your health data:\n\n"
+                    f"- **Biological Age:** {context_data.get('biological_age')} (vs actual age of {context_data.get('age')})\n"
+                    f"- **Cardiovascular Risk:** {context_data.get('cardio_risk')}/100\n"
+                    f"- **Metabolic Risk:** {context_data.get('metabolic_risk')}/100\n\n"
+                    f"Your biological age is {'higher' if context_data.get('biological_age',0) > context_data.get('age',0) else 'lower'} than your chronological age. "
+                    "Focus on sleep and stress management for the best results.\n\n"
+                    "*(Disclaimer: This is not a medical diagnosis.)*")
+        elif any(k in last_msg for k in ["smok", "tobacco", "cigarette", "vape"]):
+            return ("To help reduce your health risks:\n\n"
+                    "- Set a **quit date** and tell friends for accountability.\n"
+                    "- Use nicotine replacement therapy if needed (consult your doctor).\n"
+                    "- Replace the habit with healthy alternatives like walking.\n\n"
+                    "*(Note: Please consult a healthcare provider for a plan.)*")
+        elif any(k in last_msg for k in ["stress", "anxiety", "mental", "relax"]):
+            return ("To manage your stress effectively:\n\n"
+                    "- Practice **deep breathing** for 5-10 minutes daily.\n"
+                    "- Maintain a consistent sleep-wake schedule.\n"
+                    "- Exercise regularly to balance cortisol levels.\n\n"
+                    "*(Note: Speak with a mental health professional for support.)*")
+        else:
+            # Most generic fallback that still includes real data
+            return (f"Based on your profile (Bio Age: {context_data.get('biological_age')}), here's what I can share:\n\n"
+                    "I'm currently focused on providing guidance on your specific results. "
+                    "Ask me about **diet**, **exercise**, **heart health**, or **explain your results** for tailored advice.\n\n"
+                    "*(Please consult a doctor for serious concerns.)*")

@@ -7,6 +7,7 @@ Run: streamlit run app.py
 import streamlit as st
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+import streamlit.components.v1 as components
 import json
 import time
 from datetime import datetime
@@ -199,22 +200,26 @@ hr { border-color: var(--dz-border) !important; }
 """, unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────
-# SAMPLE DATA
-# ─────────────────────────────────────────────
-SAMPLE_PROFILE = {
-    "age": 32, "weight_kg": 62, "height_cm": 163,
-    "sleep_hours": 5.5, "steps_per_day": 3200, "resting_hr": 82,
-    "systolic_bp": 128, "diastolic_bp": 84, "smoker": False,
-    "packs_per_day": 0, "stress_level": 8, "exercise_min_week": 40,
-    "diet_quality": 5, "alcohol_units_week": 4,
-}
-
-# ─────────────────────────────────────────────
 # SESSION STATE
 # ─────────────────────────────────────────────
-for key, default in [("analyzed", False), ("results", None), ("metrics", None), ("ai_recs", None), ("chat_history", [])]:
+for key, default in [("analyzed", False), ("results", None), ("metrics", None), ("ai_recs", None), ("chat_history", []), ("scroll_to_top", False)]:
     if key not in st.session_state:
         st.session_state[key] = default
+
+if st.session_state.scroll_to_top:
+    components.html("""
+        <script>
+            const main = window.parent.document.querySelector('.main');
+            if (main) main.scrollTo(0,0);
+            setTimeout(() => {
+                const tabs = window.parent.document.querySelectorAll('[data-baseweb="tab"]');
+                if (tabs.length > 1) {
+                    tabs[1].click();
+                }
+            }, 500);
+        </script>
+    """, height=0)
+    st.session_state.scroll_to_top = False
 
 # ─────────────────────────────────────────────
 # HEADER  (with real generated logo)
@@ -271,16 +276,6 @@ with tab1:
     st.markdown('<div class="vs-label">STEP 01 · DATA COLLECTION</div>', unsafe_allow_html=True)
     st.markdown('<div class="vs-title">Enter Your Health Data</div>', unsafe_allow_html=True)
 
-    use_sample = st.checkbox("🚀 Use sample profile — Riya, 32", value=True)
-    if use_sample:
-        st.markdown("""
-        <div class="vs-sample-banner">
-          <strong>Sample loaded:</strong> Riya, 32 · Sedentary job · Poor sleep · High stress.
-          Edit any value below.
-        </div>""", unsafe_allow_html=True)
-
-    defaults = SAMPLE_PROFILE if use_sample else {k: None for k in SAMPLE_PROFILE}
-
     col1, col2, col3 = st.columns(3, gap="medium")
 
     # ── Personal Info ──
@@ -292,11 +287,11 @@ with tab1:
         </div>
         <div class="vs-divider"></div>""", unsafe_allow_html=True)
 
-        age    = st.number_input("Age (years)",    18, 100,  defaults.get("age", 30) or 30)
-        weight = st.number_input("Weight (kg)",    30.0, 200.0, float(defaults.get("weight_kg", 70) or 70))
-        height = st.number_input("Height (cm)",    120, 220,  defaults.get("height_cm", 170) or 170)
-        smoker = st.checkbox("Smoker 🚬",          value=defaults.get("smoker", False))
-        packs  = st.slider("Packs per day", 0.0, 3.0, float(defaults.get("packs_per_day", 0.5)), 0.5) if smoker else 0.0
+        age    = st.number_input("Age (years)",    18, 100,  30)
+        weight = st.number_input("Weight (kg)",    30.0, 200.0, 70.0)
+        height = st.number_input("Height (cm)",    120, 220,  170)
+        smoker = st.checkbox("Smoker 🚬",          value=False)
+        packs  = st.slider("Packs per day", 0.0, 3.0, 0.0, 0.5) if smoker else 0.0
 
     # ── Vitals ──
     with col2:
@@ -307,10 +302,10 @@ with tab1:
         </div>
         <div class="vs-divider"></div>""", unsafe_allow_html=True)
 
-        resting_hr = st.slider("Resting Heart Rate (bpm)", 40, 120, defaults.get("resting_hr", 72) or 72)
-        systolic   = st.slider("Systolic BP (mmHg)",       90, 200, defaults.get("systolic_bp", 120) or 120)
-        diastolic  = st.slider("Diastolic BP (mmHg)",      60, 130, defaults.get("diastolic_bp", 80) or 80)
-        alcohol    = st.slider("Alcohol (units/week)",      0,  50,  defaults.get("alcohol_units_week", 0) or 0)
+        resting_hr = st.slider("Resting Heart Rate (bpm)", 40, 120, 72)
+        systolic   = st.slider("Systolic BP (mmHg)",       90, 200, 120)
+        diastolic  = st.slider("Diastolic BP (mmHg)",      60, 130, 80)
+        alcohol    = st.slider("Alcohol (units/week)",      0,  50,  0)
 
     # ── Lifestyle ──
     with col3:
@@ -321,11 +316,11 @@ with tab1:
         </div>
         <div class="vs-divider"></div>""", unsafe_allow_html=True)
 
-        sleep    = st.slider("Sleep (hours/night)",   3.0, 12.0, float(defaults.get("sleep_hours", 7.0) or 7.0), 0.5)
-        steps    = st.slider("Daily Steps",           0, 20000,  defaults.get("steps_per_day", 7500) or 7500, 250)
-        exercise = st.slider("Exercise (min/week)",   0, 600,    defaults.get("exercise_min_week", 150) or 150)
-        stress   = st.slider("Stress Level (1–10)",   1, 10,     defaults.get("stress_level", 5) or 5)
-        diet     = st.slider("Diet Quality (1–10)",   1, 10,     defaults.get("diet_quality", 6) or 6)
+        sleep    = st.slider("Sleep (hours/night)",   3.0, 12.0, 7.5, 0.5)
+        steps    = st.slider("Daily Steps",           0, 20000,  5000, 250)
+        exercise = st.slider("Exercise (min/week)",   0, 600,    150)
+        stress   = st.slider("Stress Level (1–10)",   1, 10,     5)
+        diet     = st.slider("Diet Quality (1–10)",   1, 10,     5)
 
     st.markdown("<br>", unsafe_allow_html=True)
     _, col_btn, _ = st.columns([1, 2, 1])
@@ -355,6 +350,7 @@ with tab1:
         st.session_state.results  = {"bio": bio_result, "projection": projection}
         st.session_state.metrics  = metrics
         st.session_state.ai_recs  = ai_recs
+        st.session_state.scroll_to_top = True
         st.rerun()
 
 # ═══════════════════════════════════
