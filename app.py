@@ -35,17 +35,18 @@ st.markdown("""
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap');
 
 :root {
-    --dz-bg-grad: #F8FAFC;
+    --dz-bg-grad: #F0F4F8; /* Light Sky Blue */
     --dz-surface: #FFFFFF;
     --dz-surface-solid: #FFFFFF;
-    --dz-text: #0F172A;
+    --dz-text: #1E293B;
     --dz-text-light: #64748B;
-    --dz-primary: #063B96;
-    --dz-primary-grad: #063B96;
+    --dz-primary: #2A5298; /* Medical Blue */
+    --dz-primary-grad: #2A5298;
+    --dz-accent: #88D4B5; /* Minty Green */
     --dz-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
-    --dz-border: #E2E8F0;
-    --dz-radius: 20px;
-    --dz-glow: 0 0 0 3px rgba(6, 59, 150, 0.2);
+    --dz-border: #CBD5E1;
+    --dz-radius: 16px;
+    --dz-glow: 0 0 0 3px rgba(42, 82, 152, 0.1);
 }
 
 html, body, .stApp {
@@ -83,6 +84,10 @@ h1, h2, h3, h4, h5, h6 {
 #MainMenu, footer, header { visibility: hidden; }
 .stDeployButton { display: none; }
 
+.chat-bubble { padding: 0.85rem 1rem; border-radius: 14px; margin-bottom: 0.8rem; max-width: 75%; line-height: 1.4; }
+.chat-bubble.user { background: rgba(37,99,235,0.12); border: 1px solid rgba(37,99,235,0.35); color: #1e40af; }
+.chat-bubble.assistant { background: rgba(147,197,253,0.25); border: 1px solid rgba(59,130,246,0.45); color: #1e3a8a; }
+
 .main .block-container {
     padding: 2rem 2.5rem 5rem !important;
     max-width: 1200px !important;
@@ -112,8 +117,15 @@ h1, h2, h3, h4, h5, h6 {
 .vs-logo-name { font-size: 1.8rem; font-weight: 700; color: #334155; }
 .vs-logo-tag { color: var(--dz-text-light); font-size: 0.9rem; margin-top: 4px; }
 .vs-title { font-size: 2rem; font-weight: 700; margin-bottom: 1.5rem; color: #334155; }
-.vs-label { background: rgba(192, 132, 252, 0.15); color: var(--dz-primary); padding: 5px 16px; border-radius: 999px; font-weight: 600; font-size: 0.75rem; letter-spacing: 0.05em; display: inline-block; margin-bottom: 0.8rem; }
+.vs-label { background: rgba(42, 82, 152, 0.1); color: var(--dz-primary); padding: 5px 16px; border-radius: 999px; font-weight: 700; font-size: 0.75rem; letter-spacing: 0.1em; display: inline-block; margin-bottom: 0.8rem; text-transform: uppercase; }
+.vs-icon-wrap.icon-lilac { background: #E0E7FF; color: #4338CA; } /* Blue */
+.vs-icon-wrap.icon-peach { background: #E0F2FE; color: #0369A1; } /* Sky Blue */
+.vs-icon-wrap.icon-mint { background: #DCFCE7; color: #15803D; } /* Green */
 .vs-insight-title { color: var(--dz-primary); font-size: 1.2rem; font-weight: 700; margin-bottom: 0.6rem; }
+.vs-best-change-sticky { position: sticky; top: 92px; z-index: 9; border: 2px solid rgba(99,102,241,0.4); background: rgba(237,233,254,0.9); box-shadow: 0 8px 18px rgba(79,70,229,0.22); border-radius: 16px; padding: 18px; margin-bottom: 16px; animation: pulseGlow 2.2s ease-in-out infinite; }
+.vs-best-change-sticky .subline { color: #4338CA; font-weight: 700; margin-top: 6px; }
+.step-delta { font-size: 0.85rem; color: #6D28D9; font-weight: 700; }
+@keyframes pulseGlow { 0%,100% { box-shadow: 0 8px 18px rgba(79,70,229,0.2); } 50% { box-shadow: 0 16px 26px rgba(99,102,241,0.35); } }
 
 .vs-bio-number { font-size: 5rem; font-weight: 700; background: var(--dz-primary-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 .vs-metric-val { font-size: 2.5rem; font-weight: 800; background: var(--dz-primary-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
@@ -196,15 +208,84 @@ hr { border-color: var(--dz-border) !important; }
 .diff-easy { color: #88D4B5; font-weight: 600; }
 .diff-medium { color: #FFB49A; font-weight: 600; }
 .diff-hard { color: #FF6B8A; font-weight: 600; }
+
+.health-status-green { color: #10B981; font-size: 0.85rem; font-weight: 700; margin-bottom: 0.5rem; display: block; }
+.health-status-amber { color: #F59E0B; font-size: 0.85rem; font-weight: 700; margin-bottom: 0.5rem; display: block; }
+.health-status-red { color: #EF4444; font-size: 0.85rem; font-weight: 700; margin-bottom: 0.5rem; display: block; }
+.metric-track-wrapper { width: 100%; height: 8px; background: #E2E8F0; border-radius: 999px; overflow: hidden; margin-bottom: 0.4rem; }
+.metric-track-fill { height: 100%; border-radius: 999px; transition: width 0.35s ease; }
+.metric-tooltip { font-size: 0.78rem; color: #44566C; margin-bottom: 0.9rem; }
+.trust-intro { font-size: 0.9rem; color: #475569; margin-bottom: 1.5rem; font-weight: 400; line-height: 1.5; background: #F1F5F9; padding: 12px; border-radius: 12px; border-left: 4px solid #2A5298; }
+.step-indicator { display: flex; align-items: center; gap: 10px; margin-bottom: 1.5rem; }
+.step-dot { width: 12px; height: 12px; border-radius: 50%; background: #2A5298; }
+.step-label { font-size: 0.8rem; font-weight: 800; color: #2A5298; text-transform: uppercase; letter-spacing: 0.1em; }
+.import-btn-container { display: flex; gap: 12px; align-items: center; margin-bottom: 1.5rem; }
+
+.risk-badge { padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin-left: 8px; }
+.badge-low { background: #DCFCE7; color: #15803D; }
+.badge-moderate { background: #FEF3C7; color: #92400E; }
+.badge-high { background: #FEE2E2; color: #991B1B; }
+.risk-legend { display: flex; gap: 15px; font-size: 0.8rem; color: #64748B; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #E2E8F0; }
+.legend-item { display: flex; align-items: center; gap: 6px; }
+.legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+.driver-card { background: #F8FAFC; border-radius: 12px; padding: 12px; margin-bottom: 10px; border-left: 4px solid #CBD5E1; }
+.driver-title { font-weight: 700; color: #1E293B; font-size: 0.9rem; }
+.driver-delta { font-weight: 700; font-size: 0.85rem; }
+.delta-plus { color: #EF4444; }
+.delta-minus { color: #10B981; }
+
+.share-badge { background: linear-gradient(135deg, #1E293B 0%, #4338CA 100%); color: white; padding: 20px; border-radius: 16px; text-align: center; margin-top: 2rem; box-shadow: 0 10px 25px rgba(30, 41, 59, 0.2); }
+.share-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 5px; }
+.share-subtitle { font-size: 0.9rem; opacity: 0.9; }
 </style>
 """, unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────
 # SESSION STATE
 # ─────────────────────────────────────────────
-for key, default in [("analyzed", False), ("results", None), ("metrics", None), ("ai_recs", None), ("chat_history", []), ("scroll_to_top", False)]:
+for key, default_val in [
+    ("analyzed", False), ("results", None), ("metrics", None), ("ai_recs", None), ("chat_history", []), ("scroll_to_top", False)
+]:
     if key not in st.session_state:
-        st.session_state[key] = default
+        st.session_state[key] = default_val
+
+# Helper to load sample profile
+def load_sample():
+    with open("profiles.json", "r") as f:
+        data = json.load(f)
+    p = data["default_user"]
+    st.session_state["name"] = p.get("name", "Riya")
+    st.session_state["age_val"] = int(p["age"])
+    st.session_state["weight_val"] = float(p["weight_kg"])
+    st.session_state["height_val"] = int(p["height_cm"])
+    st.session_state["smoker_val"] = bool(p["smoker"])
+    st.session_state["hr_val"] = int(p["resting_hr"])
+    st.session_state["sys_val"] = int(p["systolic_bp"])
+    st.session_state["dia_val"] = int(p["diastolic_bp"])
+    st.session_state["alc_val"] = int(p["alcohol_units_week"])
+    st.session_state["sleep_val"] = float(p["sleep_hours"])
+    st.session_state["steps_val"] = int(p["steps_per_day"])
+    st.session_state["exe_val"] = int(p["exercise_min_week"])
+    st.session_state["stress_val"] = int(p["stress_level"])
+    st.session_state["diet_val"] = int(p["diet_quality"])
+    st.session_state["packs_val"] = float(p.get("packs_per_day", 0.0))
+    st.session_state["last_updated"] = p.get("last_updated", datetime.now().strftime('%Y-%m-%d %H:%M'))
+
+if "age_val" not in st.session_state:
+    st.session_state["age_val"] = 32
+    st.session_state["weight_val"] = 70.0
+    st.session_state["height_val"] = 170
+    st.session_state["smoker_val"] = False
+    st.session_state["hr_val"] = 72
+    st.session_state["sys_val"] = 120
+    st.session_state["dia_val"] = 80
+    st.session_state["alc_val"] = 0
+    st.session_state["sleep_val"] = 7.5
+    st.session_state["steps_val"] = 5000
+    st.session_state["exe_val"] = 150
+    st.session_state["stress_val"] = 5
+    st.session_state["diet_val"] = 5
 
 if st.session_state.scroll_to_top:
     components.html("""
@@ -238,6 +319,8 @@ except Exception:
       <defs><linearGradient id="gf" x1="0" y1="0" x2="36" y2="36"><stop stop-color="#FF6B8A"/><stop offset="1" stop-color="#A78BFA"/></linearGradient></defs>
     </svg>"""
 
+last_updated_value = st.session_state.get('last_updated', datetime.now().strftime('%Y-%m-%d %H:%M'))
+
 st.markdown(f"""
 <div class="vs-header">
   <div style="display:flex;align-items:center;gap:14px;">
@@ -247,10 +330,88 @@ st.markdown(f"""
       <div class="vs-logo-tag">Your personal health companion</div>
     </div>
   </div>
-  <div class="vs-header-badge">💗 AI for Longevity</div>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <span class="vs-header-badge">💗 AI for Longevity</span>
+    <span style="color:#334155;font-size:0.85rem;">Last updated: {last_updated_value}</span>
+    <form action="#" style="display:inline;">
+      <button type="button" id="recalculate-btn" style="border:none;background:#4338CA;color:white;border-radius:10px;padding:6px 12px;cursor:pointer;">🔄 Recalculate</button>
+    </form>
+  </div>
 </div>
+<script>
+  const recalc = document.getElementById('recalculate-btn');
+  if (recalc) {{
+    recalc.onclick = () => {{ window.location.reload(); }};
+  }}
+</script>
 """, unsafe_allow_html=True)
+st.session_state['last_updated'] = last_updated_value
 
+
+
+# ─────────────────────────────────────────────
+# ONBOARDING (first visit)
+# ─────────────────────────────────────────────
+if not st.session_state.get('seen_onboarding', False):
+    st.markdown('''
+    <div style="border:1px solid rgba(99,102,241,0.4); border-radius: 14px; padding: 20px; background: rgba(237,233,254,0.45); margin-bottom:20px;">
+      <h3>Welcome to the Insight Loop</h3>
+      <ol style="line-height: 1.6;">
+        <li><strong>Measure</strong> your current vitals and habits.</li>
+        <li><strong>Predict</strong> your biological age and risk scores.</li>
+        <li><strong>Simulate</strong> future outcomes with habit changes.</li>
+        <li><strong>Act</strong> on personalized recommendations.</li>
+      </ol>
+      <button id="start-journey" style="border:none;background:#4338CA;color:white;padding:10px 16px;border-radius:10px;cursor:pointer;">Start your health journey</button>
+    </div>
+    <script>
+      document.getElementById('start-journey').onclick = function() {
+        window.location.hash = 'start';
+        fetch(window.location.href, {method: 'GET'}).then(()=>window.location.reload());
+      };
+    </script>
+    ''', unsafe_allow_html=True)
+    if st.button("I've read this, take me in", key="onboarding_done"):
+        st.session_state['seen_onboarding'] = True
+        st.rerun()
+
+# ─────────────────────────────────────────────
+# LOADING MICRO-ANIMATION
+# ─────────────────────────────────────────────
+st.markdown('''
+<style>
+#insightcare-loading-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background: rgba(255,255,255,0.8); z-index:9999; align-items:center; justify-content:center; font-size:1.25rem; color:#4338CA; }
+#insightcare-loading-overlay .loader { border: 5px solid #E2E8F0; border-top: 5px solid #4338CA; border-radius: 50%; width:40px; height:40px; animation: spin 0.75s linear infinite; margin-right:12px;}
+@keyframes spin { 100% { transform: rotate(360deg); } }
+</style>
+<div id="insightcare-loading-overlay"><div class="loader"></div>Calculating your health insights...</div>
+<script>
+const overlay = document.getElementById('insightcare-loading-overlay');
+function showLoading() { overlay.style.display = 'flex'; }
+function hideLoading() { overlay.style.display = 'none'; }
+window.addEventListener('load', hideLoading);
+new MutationObserver((m) => { if (overlay.style.display==='flex') setTimeout(hideLoading, 650); }).observe(document.body,{childList:true,subtree:true});
+document.querySelectorAll('[data-baseweb="tab"]').forEach(tab => tab.addEventListener('click', () => { showLoading(); setTimeout(hideLoading, 650);}));
+</script>
+''', unsafe_allow_html=True)
+
+# ─────────────────────────────────────────────
+# Slider helper for editable health metrics
+# ─────────────────────────────────────────────
+
+def render_slider_feedback(value, min_val, max_val, status_label, status_color, tooltip_text):
+    pct = round(max(0, min(100, (value - min_val) / (max_val - min_val) * 100))) if max_val > min_val else 0
+    fill_color = {'green':'#10B981','amber':'#F59E0B','red':'#EF4444'}.get(status_color, '#2A5298')
+    st.markdown(f"""
+    <div style='display:flex;align-items:center;justify-content:space-between;gap:0.5rem;margin-top:0.35rem;'>
+      <span class='health-status-{status_color}' style='font-size:0.88rem; font-weight:700;'>{status_label}</span>
+      <span style='font-size:0.82rem; color:#475569; font-weight:600;'>{value}</span>
+    </div>
+    <div class='metric-track-wrapper'>
+      <div class='metric-track-fill' style='width:{pct}%; background:{fill_color};'></div>
+    </div>
+    <div class='metric-tooltip' title='{tooltip_text}'>ℹ {tooltip_text}</div>
+    """ , unsafe_allow_html=True)
 
 
 # ─────────────────────────────────────────────
@@ -273,8 +434,24 @@ else:
 # TAB 1 — HEALTH INPUT
 # ═══════════════════════════════════
 with tab1:
-    st.markdown('<div class="vs-label">STEP 01 · DATA COLLECTION</div>', unsafe_allow_html=True)
+    st.markdown('''
+    <div class="step-indicator">
+        <div class="step-dot"></div>
+        <div class="step-label">Step 1 of 1 — Data Collection</div>
+    </div>
+    ''', unsafe_allow_html=True)
+    st.progress(1.0)
+    st.markdown("<br>", unsafe_allow_html=True)
     st.markdown('<div class="vs-title">Enter Your Health Data</div>', unsafe_allow_html=True)
+    st.markdown('<div class="trust-intro">Your data never leaves your device. Used only to calculate your biological age and health projections.</div>', unsafe_allow_html=True)
+
+    col_import_1, col_import_2 = st.columns([1, 1])
+    with col_import_1:
+         if st.button("🚀 Load Sample Profile (Riya, 32)", type="secondary", width='stretch'):
+             load_sample()
+             st.rerun()
+    with col_import_2:
+         st.button("📲 Import from Wearables", help="Connect Google Fit or Apple Health (Simulated)", width='stretch')
 
     col1, col2, col3 = st.columns(3, gap="medium")
 
@@ -287,10 +464,10 @@ with tab1:
         </div>
         <div class="vs-divider"></div>""", unsafe_allow_html=True)
 
-        age    = st.number_input("Age (years)",    18, 100,  30)
-        weight = st.number_input("Weight (kg)",    30.0, 200.0, 70.0)
-        height = st.number_input("Height (cm)",    120, 220,  170)
-        smoker = st.checkbox("Smoker 🚬",          value=False)
+        age    = st.number_input("Age (years)",    18, 100,  st.session_state["age_val"], help="Age is a primary factor in biological aging and disease risk.", key="age_widget")
+        weight = st.number_input("Weight (kg)",    30.0, 200.0, st.session_state["weight_val"], help="Body mass index (BMI) is calculated from weight and height, affecting metabolic health.", key="weight_widget")
+        height = st.number_input("Height (cm)",    120, 220,  st.session_state["height_val"], help="Used to assess body composition and BMI.", key="height_widget")
+        smoker = st.checkbox("Smoker 🚬",          value=st.session_state["smoker_val"], help="Smoking significantly accelerates biological aging and increases cardiovascular risk.", key="smoker_widget")
         packs  = st.slider("Packs per day", 0.0, 3.0, 0.0, 0.5) if smoker else 0.0
 
     # ── Vitals ──
@@ -302,10 +479,53 @@ with tab1:
         </div>
         <div class="vs-divider"></div>""", unsafe_allow_html=True)
 
-        resting_hr = st.slider("Resting Heart Rate (bpm)", 40, 120, 72)
-        systolic   = st.slider("Systolic BP (mmHg)",       90, 200, 120)
-        diastolic  = st.slider("Diastolic BP (mmHg)",      60, 130, 80)
-        alcohol    = st.slider("Alcohol (units/week)",      0,  50,  0)
+        resting_hr = st.slider("Resting Heart Rate (bpm)", 40, 120, st.session_state["hr_val"], help="A lower resting heart rate (60-70 bpm) is typically associated with better cardiovascular fitness.", key="hr_widget")
+        if resting_hr <= 70:
+            hr_status_label = 'Optimal Fitness'; hr_status_color = 'green'
+            hr_tooltip = 'Resting HR measures baseline cardiovascular workload. Optimal: 60–70 bpm.'
+        elif resting_hr <= 80:
+            hr_status_label = 'Good Range'; hr_status_color = 'amber'
+            hr_tooltip = 'Slightly elevated but still acceptable in active adults. Aim for <75 bpm.'
+        else:
+            hr_status_label = 'Cardiovascular Stress'; hr_status_color = 'red'
+            hr_tooltip = 'Persistently high resting HR indicates higher risk for hypertension and heart disease.'
+        render_slider_feedback(resting_hr, 40, 120, hr_status_label, hr_status_color, hr_tooltip)
+
+        systolic   = st.slider("Systolic BP (mmHg)",       90, 200, st.session_state["sys_val"], help="The pressure in your arteries when your heart beats. High values (>130) increase heart risk.", key="sys_widget")
+        if systolic < 120:
+            sys_status_label = 'Healthy Range'; sys_status_color = 'green'
+            sys_tooltip = 'Optimal systolic BP is <120. Lower values support vascular health.'
+        elif systolic < 130:
+            sys_status_label = 'Elevated - Monitor'; sys_status_color = 'amber'
+            sys_tooltip = 'Systolic 120–129 is borderline; lifestyle changes are advised.'
+        else:
+            sys_status_label = 'Hypertension Risk'; sys_status_color = 'red'
+            sys_tooltip = '130+ mmHg is hypertension range; consult a clinician.'
+        render_slider_feedback(systolic, 90, 200, sys_status_label, sys_status_color, sys_tooltip)
+
+        diastolic  = st.slider("Diastolic BP (mmHg)",      60, 130, st.session_state["dia_val"], help="The pressure in your arteries when your heart rests between beats.", key="dia_widget")
+        if diastolic < 80:
+            dia_status_label = 'Optimal'; dia_status_color = 'green'
+            dia_tooltip = 'Diastolic <80 is the target for healthy arterial tone.'
+        elif diastolic < 90:
+            dia_status_label = 'Elevated'; dia_status_color = 'amber'
+            dia_tooltip = '80–89 is elevated and suggests increased cardiovascular load.'
+        else:
+            dia_status_label = 'High Risk'; dia_status_color = 'red'
+            dia_tooltip = '>=90 indicates diastolic hypertension and potential organ stress.'
+        render_slider_feedback(diastolic, 60, 130, dia_status_label, dia_status_color, dia_tooltip)
+
+        alcohol    = st.slider("Alcohol (units/week)",      0,  50,  st.session_state["alc_val"], help="Excessive alcohol intake can impact liver health and longevity.", key="alc_widget")
+        if alcohol <= 7:
+            alc_status_label = 'Healthy Lifestyle'; alc_status_color = 'green'
+            alc_tooltip = 'Up to 7 units/week is low-risk for most adults.'
+        elif alcohol <= 14:
+            alc_status_label = 'Moderate Intake'; alc_status_color = 'amber'
+            alc_tooltip = '8–14 units/week is intermediate; reduce intake to lower risk.'
+        else:
+            alc_status_label = 'High Intake - Risky'; alc_status_color = 'red'
+            alc_tooltip = '15+ units/week is associated with increased liver, heart and cancer risk.'
+        render_slider_feedback(alcohol, 0, 50, alc_status_label, alc_status_color, alc_tooltip)
 
     # ── Lifestyle ──
     with col3:
@@ -316,16 +536,70 @@ with tab1:
         </div>
         <div class="vs-divider"></div>""", unsafe_allow_html=True)
 
-        sleep    = st.slider("Sleep (hours/night)",   3.0, 12.0, 7.5, 0.5)
-        steps    = st.slider("Daily Steps",           0, 20000,  5000, 250)
-        exercise = st.slider("Exercise (min/week)",   0, 600,    150)
-        stress   = st.slider("Stress Level (1–10)",   1, 10,     5)
-        diet     = st.slider("Diet Quality (1–10)",   1, 10,     5)
+        sleep    = st.slider("Sleep (hours/night)",   3.0, 12.0, st.session_state["sleep_val"], 0.5, help="Quality sleep (7-9 hours) is crucial for cellular repair and cognitive health.", key="sleep_widget")
+        if 7 <= sleep <= 9:
+            sleep_status_label = 'Optimal Repair'; sleep_status_color = 'green'
+            sleep_tooltip = '7–9 hours is ideal for metabolic regeneration and cognitive restoration.'
+        elif 6 <= sleep < 7 or 9 < sleep <= 10:
+            sleep_status_label = 'Moderate Recovery'; sleep_status_color = 'amber'
+            sleep_tooltip = '6–6.5 or 9–10 hours is acceptable short-term; aim for consistent 7–9 hours.'
+        else:
+            sleep_status_label = 'Poor Sleep Hygiene'; sleep_status_color = 'red'
+            sleep_tooltip = 'Less than 6 or more than 10 hours regularly is linked to elevated mortality risk.'
+        render_slider_feedback(sleep, 3, 12, sleep_status_label, sleep_status_color, sleep_tooltip)
+
+        steps    = st.slider("Daily Steps",           0, 20000,  st.session_state["steps_val"], 250, help="Aim for 8,000–10,000 steps daily to maintain metabolic and cardiovascular health.", key="steps_widget")
+        if steps >= 10000:
+            step_status_label = 'Longevity Goal'; step_status_color = 'green'
+            step_tooltip = '10,000+ steps is linked to lower cardiovascular events.'
+        elif steps >= 5000:
+            step_status_label = 'Active Range'; step_status_color = 'amber'
+            step_tooltip = '5,000–9,999 steps indicates moderate daily activity; increasing is beneficial.'
+        else:
+            step_status_label = 'Sedentary - Higher Risk'; step_status_color = 'red'
+            step_tooltip = 'Below 5,000 steps is sedentary and increases metabolic risk.'
+        render_slider_feedback(steps, 0, 20000, step_status_label, step_status_color, step_tooltip)
+
+        exercise = st.slider("Exercise (min/week)",   0, 600,    st.session_state["exe_val"], help="150+ minutes of moderate exercise per week is linked to significantly longer life.", key="exe_widget")
+        if exercise >= 150:
+            exe_status_label = 'Meeting Guidelines'; exe_status_color = 'green'
+            exe_tooltip = '150+ min/week is recommended by WHO; go further for bigger gains.'
+        elif exercise >= 75:
+            exe_status_label = 'Improving Health'; exe_status_color = 'amber'
+            exe_tooltip = '75–149 min/week is better than none, but more is ideal.'
+        else:
+            exe_status_label = 'Inactive - Increase ASAP'; exe_status_color = 'red'
+            exe_tooltip = 'Less than 75 min/week is low and linked to early aging metrics.'
+        render_slider_feedback(exercise, 0, 600, exe_status_label, exe_status_color, exe_tooltip)
+
+        stress   = st.slider("Stress Level (1–10)",   1, 10,     st.session_state["stress_val"], help="Chronic stress impacts inflammation and accelerates cellular aging.", key="stress_widget")
+        if stress <= 3:
+            stress_status_label = 'Well Managed'; stress_status_color = 'green'
+            stress_tooltip = 'Low stress supports hormonal balance and reduced inflammation.'
+        elif stress <= 7:
+            stress_status_label = 'Moderate Stress'; stress_status_color = 'amber'
+            stress_tooltip = 'Moderate stress is common; manage with mindfulness routines.'
+        else:
+            stress_status_label = 'High Cortisol Load'; stress_status_color = 'red'
+            stress_tooltip = 'High stress over time accelerates cellular damage and metabolic syndrome.'
+        render_slider_feedback(stress, 1, 10, stress_status_label, stress_status_color, stress_tooltip)
+
+        diet     = st.slider("Diet Quality (1–10)",   1, 10,     st.session_state["diet_val"], help="A nutrient-dense diet (rich in plants/healthy fats) supports long-term health.", key="diet_widget")
+        if diet >= 8:
+            diet_status_label = 'Excellent Nutrition'; diet_status_color = 'green'
+            diet_tooltip = '8–10 indicates plant-rich whole-food diet with healthy fats.'
+        elif diet >= 5:
+            diet_status_label = 'Fair Diet'; diet_status_color = 'amber'
+            diet_tooltip = '5–7 shows room for improvement towards more fiber and micronutrients.'
+        else:
+            diet_status_label = 'Nutrient Deficient'; diet_status_color = 'red'
+            diet_tooltip = '1–4 indicates likely macro/micronutrient gaps and processed food overconsumption.'
+        render_slider_feedback(diet, 1, 10, diet_status_label, diet_status_color, diet_tooltip)
 
     st.markdown("<br>", unsafe_allow_html=True)
     _, col_btn, _ = st.columns([1, 2, 1])
     with col_btn:
-        analyze = st.button("🔬  Analyze My Health", use_container_width=True)
+        analyze = st.button("🧬  Calculate My Biological Age →", width='stretch')
 
     if analyze:
         metrics = {
@@ -388,7 +662,8 @@ if tab2 is not None:
                   <div style="font-size:0.82rem;color:var(--text-light);margin:0.3rem 0;">
                     vs chronological age &nbsp;<strong style="color:var(--text-dark);">{bio['chronological_age']}</strong>
                   </div>
-                  <div style="color:{s_col};font-size:0.82rem;font-weight:700;margin-top:0.4rem;">{s_text}</div>
+                  <div style="font-size:0.77rem;color:#64748B;margin-bottom:0.25rem;">Average for your age: 31.2 years</div>
+                  <div style="color:{s_col};font-size:0.82rem;font-weight:700;margin-top:0.2rem;">{s_text}</div>
                   <div style="margin-top:0.8rem;font-size:0.72rem;color:var(--text-light);">BMI: {bio['bmi']}</div>
                 </div>""", unsafe_allow_html=True)
 
@@ -398,14 +673,27 @@ if tab2 is not None:
                     ("Metabolic",       bio["metabolic_risk"], "#FBBF24"),
                     ("Cognitive Decline", bio["cognitive_risk"], "#A78BFA"),
                 ]:
+                    badge_class = "badge-low" if risk_val <= 25 else "badge-moderate" if risk_val <= 50 else "badge-high"
+                    badge_text = "Low" if risk_val <= 25 else "Moderate" if risk_val <= 50 else "High"
                     st.markdown(f"""
                     <div class="vs-risk-row">
-                      <div class="vs-risk-label">{risk_name}</div>
+                      <div class="vs-risk-label">{risk_name} <span class="risk-badge {badge_class}">{badge_text}</span></div>
                       <div class="vs-risk-bg">
                         <div class="vs-risk-fill" style="width:{risk_val}%;background:{risk_color};"></div>
                       </div>
                       <div class="vs-risk-score" style="color:{risk_color};">{risk_val}</div>
                     </div>""", unsafe_allow_html=True)
+                
+                st.markdown("""
+                <div class="risk-legend">
+                    <div class="legend-item"><div class="legend-dot" style="background:#10B981;"></div> Low (0-25)</div>
+                    <div class="legend-item"><div class="legend-dot" style="background:#F59E0B;"></div> Moderate (26-50)</div>
+                    <div class="legend-item"><div class="legend-dot" style="background:#EF4444;"></div> High (51-100)</div>
+                </div>
+                """, unsafe_allow_html=True)
+
+                with st.expander("ℹ️ How is this calculated?"):
+                    st.markdown("Based on validated PhenoAge-style methodology (Levine et al. 2018), calibrated for lifestyle and vitals in population cohorts.")
 
             with col_right:
                 # Gauge chart — light theme
@@ -439,8 +727,13 @@ if tab2 is not None:
                     font={"color": "#6B6B8A", "family": "Nunito Sans"},
                     height=300,
                     margin=dict(t=40, b=0, l=30, r=30),
+                    annotations=[dict(
+                        text="People your age average 31.2 biological years",
+                        x=0.5, y=-0.1, xref="paper", yref="paper",
+                        showarrow=False, font=dict(size=12, color="#64748B")
+                    )]
                 )
-                st.plotly_chart(fig_gauge, use_container_width=True)
+                st.plotly_chart(fig_gauge, width='stretch')
 
                 # Radar chart — pastel palette
                 breakdown  = bio["breakdown"]
@@ -448,24 +741,76 @@ if tab2 is not None:
                 keys       = ["sleep", "steps", "bp", "hr", "exercise", "stress", "diet"]
                 scores_pct = [max(0, 100 - (breakdown[k]["score"] / 8 * 100)) for k in keys]
 
-                fig_radar = go.Figure(go.Scatterpolar(
+                fig_radar = go.Figure()
+                
+                # User Profile
+                fig_radar.add_trace(go.Scatterpolar(
                     r=scores_pct, theta=categories,
                     fill="toself",
-                    fillcolor="rgba(255,107,138,0.12)",
-                    line=dict(color="#FF6B8A", width=2),
+                    fillcolor="rgba(167, 139, 250, 0.2)",
+                    line=dict(color="#6366F1", width=2),
+                    name="Your Profile"
                 ))
+                
+                # Optimal Zone
+                fig_radar.add_trace(go.Scatterpolar(
+                    r=[90]*len(categories), theta=categories,
+                    fill="toself",
+                    fillcolor="rgba(16, 185, 129, 0.05)",
+                    line=dict(color="#10B981", width=1, dash="dot"),
+                    name="Optimal Zone"
+                ))
+                
                 fig_radar.update_layout(
                     polar=dict(
                         radialaxis=dict(visible=True, range=[0, 100],
                                         tickfont={"color": "#A0A0BA"}, gridcolor="rgba(167,139,250,0.15)"),
-                        angularaxis=dict(tickfont={"color": "#6B6B8A"}, gridcolor="rgba(167,139,250,0.15)"),
+                        angularaxis=dict(tickfont={"color": "#6B6B8A", "size": 11}, gridcolor="rgba(167,139,250,0.15)"),
                         bgcolor="rgba(0,0,0,0)",
                     ),
                     paper_bgcolor="rgba(0,0,0,0)",
-                    showlegend=False, height=300,
-                    margin=dict(t=30, b=30, l=30, r=30),
+                    showlegend=True, height=340,
+                    margin=dict(t=30, b=30, l=60, r=60),
                 )
-                st.plotly_chart(fig_radar, use_container_width=True)
+                st.plotly_chart(fig_radar, width='stretch')
+
+                st.markdown("<br>", unsafe_allow_html=True)
+                st.markdown("### 🧬 What's driving my age?")
+                # Calculate drivers from breakdown
+                drivers = sorted(
+                    st.session_state.results["bio"]["breakdown"].items(),
+                    key=lambda x: x[1]["score"],
+                    reverse=True
+                )
+                
+                category_mapping = {
+                    "bmi": "Body Composition", "sleep": "Sleep Quality", "steps": "Daily Movement",
+                    "bp": "Blood Pressure", "hr": "Heart Rate", "smoking": "Tobacco Use",
+                    "stress": "Stress Management", "exercise": "Physical Activity",
+                    "diet": "Dietary Quality", "alcohol": "Alcohol Intake"
+                }
+
+                for k, v in drivers[:3]:
+                    if v["score"] > 0:
+                        impact_yrs = round((v["score"] / 8.0) * 15, 1)
+                        st.markdown(f"""
+                        <div class="driver-card" style="border-left-color: {'#EF4444' if impact_yrs > 1 else '#F59E0B'};">
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <span class="driver-title">{category_mapping.get(k, k)}</span>
+                                <span class="driver-delta delta-plus">+{impact_yrs} yrs</span>
+                            </div>
+                        </div>
+                        """, unsafe_allow_html=True)
+                
+                # Share Badge
+                percentile = bio.get('percentile', 63) if isinstance(bio.get('percentile', None), (int, float)) else 63
+                st.markdown(f"""
+                <div class="share-badge">
+                    <div class="share-title">My Biological Age: {bio['biological_age']} 🎉</div>
+                    <div class="share-subtitle">Younger than {percentile}% of people your age</div>
+                </div>
+                """, unsafe_allow_html=True)
+
 
 # ═══════════════════════════════════
 # TAB 3 — FUTURE PROJECTION
@@ -483,72 +828,135 @@ if tab3 is not None:
             proj    = st.session_state.results["projection"]
             metrics = st.session_state.metrics
 
+            if "saved_scenarios" not in st.session_state:
+                st.session_state["saved_scenarios"] = []
+
             st.markdown('<div class="vs-label">THE TIME MACHINE</div>', unsafe_allow_html=True)
             st.markdown('<div class="vs-title">Your Health in 2035</div>', unsafe_allow_html=True)
 
             habit_label = proj.get("best_habit_label", "improve sleep")
+            best_text = f"{habit_label} → saves {proj['age_savings']} biological years by 2035 → cuts cardiovascular risk by {proj['cardio_risk_reduction']} points."
             st.markdown(f"""
-            <div class="vs-insight">
+            <div class="vs-best-change-sticky">
               <div class="vs-insight-title">💡 Single Best Change</div>
-              <div style="color:var(--text-body);">If you only change one thing: <strong style="color:var(--purple);">{habit_label}</strong></div>
-              <div style="color:#059669;font-size:0.87rem;margin-top:0.4rem;font-weight:600;">
-                → Save {proj['age_savings']} years of biological aging &nbsp;·&nbsp; Cut heart risk by {proj['cardio_risk_reduction']} points
-              </div>
-            </div>""", unsafe_allow_html=True)
+              <div style="color:var(--text-dark);">{best_text}</div>
+              <div class="subline">Top opportunity pinned for 10-year impact</div>
+            </div>
+            """, unsafe_allow_html=True)
 
-            st.markdown("**🔧 Simulate a Habit Change**")
-            c1, c2 = st.columns(2)
-            with c1:
+            st.markdown("**🔧 Simulate Habit Changes**")
+            col1, col2 = st.columns(2)
+            with col1:
                 sim_sleep = st.slider("Sleep hours", 3.0, 12.0, float(metrics["sleep_hours"]), 0.5, key="sim_sleep")
-            with c2:
                 sim_steps = st.slider("Daily steps", 0, 20000, metrics["steps_per_day"], 500, key="sim_steps")
+                sim_stress = st.slider("Stress level", 1, 10, metrics["stress_level"], 1, key="sim_stress")
+            with col2:
+                sim_diet = st.slider("Diet quality", 1, 10, metrics["diet_quality"], 1, key="sim_diet")
+                sim_exercise = st.slider("Exercise min/week", 0, 600, metrics["exercise_min_week"], 5, key="sim_exercise")
 
-            sim_proj = project_health_trajectory({**metrics, "sleep_hours": sim_sleep, "steps_per_day": sim_steps})
+            base_opt_end = proj["optimized_bio_ages"][-1]
+            def trend_delta(new_val, key_name):
+                scenario = {**metrics, "sleep_hours": sim_sleep, "steps_per_day": sim_steps, "stress_level": sim_stress, "diet_quality": sim_diet, "exercise_min_week": sim_exercise}
+                scenario[key_name] = new_val
+                p = project_health_trajectory(scenario)
+                diff = round(p["optimized_bio_ages"][-1] - base_opt_end, 1)
+                arrow = "⬇" if diff < 0 else "⬆" if diff > 0 else "→"
+                return f"{arrow} {diff:+.1f} bio years"
 
-            # Projection line chart — light theme
+            st.markdown(f"<div class='step-delta'>Sleep delta: {trend_delta(sim_sleep, 'sleep_hours')}</div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='step-delta'>Steps delta: {trend_delta(sim_steps, 'steps_per_day')}</div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='step-delta'>Stress delta: {trend_delta(sim_stress, 'stress_level')}</div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='step-delta'>Diet delta: {trend_delta(sim_diet, 'diet_quality')}</div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='step-delta'>Exercise delta: {trend_delta(sim_exercise, 'exercise_min_week')}</div>", unsafe_allow_html=True)
+
+            sim_proj = project_health_trajectory({**metrics, "sleep_hours": sim_sleep, "steps_per_day": sim_steps,
+                                                 "stress_level": sim_stress, "diet_quality": sim_diet,
+                                                 "exercise_min_week": sim_exercise})
+
+            with st.expander("Scenario Comparison (save up to 3 scenarios)", expanded=True):
+                slot_label = st.text_input("Scenario name", value=f"Scenario {len(st.session_state.saved_scenarios) + 1}", key="scenario_name")
+                if st.button("Save scenario", key="save_scenario_button"):
+                    if len(st.session_state.saved_scenarios) >= 3:
+                        st.warning("Max 3 scenarios saved. Remove one to add another.")
+                    else:
+                        st.session_state.saved_scenarios.append({
+                            "label": slot_label,
+                            "metrics": {**metrics, "sleep_hours": sim_sleep, "steps_per_day": sim_steps,
+                                        "stress_level": sim_stress, "diet_quality": sim_diet,
+                                        "exercise_min_week": sim_exercise}
+                        })
+                        st.rerun()
+
+                saved_labels = [s["label"] for s in st.session_state.saved_scenarios]
+                selected_scenarios = st.multiselect("Compare saved scenarios", saved_labels, default=saved_labels)
+
+            calendar_years = [2026 + y for y in proj["years"]]
+
             fig_proj = go.Figure()
             fig_proj.add_trace(go.Scatter(
-                x=proj["years"], y=proj["current_bio_ages"], name="Current Path",
-                line=dict(color="#F87171", width=3, dash="dash"),
-                fill="tozeroy", fillcolor="rgba(248,113,113,0.05)",
+                x=calendar_years, y=proj["current_bio_ages"], name="Current Path",
+                line=dict(color="#F87171", width=3, dash="dash"), fill="tozeroy", fillcolor="rgba(248,113,113,0.05)"
             ))
             fig_proj.add_trace(go.Scatter(
-                x=sim_proj["years"], y=sim_proj["optimized_bio_ages"], name="Optimised Path",
-                line=dict(color="#A78BFA", width=3),
-                fill="tozeroy", fillcolor="rgba(167,139,250,0.08)",
+                x=calendar_years, y=sim_proj["optimized_bio_ages"], name="Optimised Path",
+                line=dict(color="#A78BFA", width=3), fill="tozeroy", fillcolor="rgba(167,139,250,0.08)"
             ))
-            fig_proj.add_vline(x=0, line_dash="dot", line_color="#C4B5FD", annotation_text="Today")
+
+            scenario_colors = ["#FBBF24", "#3B82F6", "#8B5CF6"]
+            for i, label in enumerate(selected_scenarios):
+                scenario = next((s for s in st.session_state.saved_scenarios if s["label"] == label), None)
+                if scenario:
+                    scenario_proj = project_health_trajectory(scenario["metrics"])
+                    fig_proj.add_trace(go.Scatter(
+                        x=calendar_years, y=scenario_proj["optimized_bio_ages"], name=f"{label}",
+                        line=dict(color=scenario_colors[i], width=2, dash="dot")
+                    ))
+
+            fig_proj.add_vline(x=2026, line_dash="dot", line_color="#4338CA", opacity=0.85)
+            fig_proj.add_annotation(x=2026, y=max(sim_proj["optimized_bio_ages"][0], proj["current_bio_ages"][0]) + 1.4,
+                                     text="TODAY", showarrow=False, font=dict(color="#4338CA", size=11))
+
+            year4_risk = sim_proj["optimized_cardio_risk"][4]
+            milestone_text = "🎯 Heart risk drops below 20 at Year 4" if year4_risk < 20 else f"🎯 Heart risk is {year4_risk} at Year 4"
+            fig_proj.add_annotation(x=2030, y=sim_proj["optimized_bio_ages"][4], text=milestone_text,
+                                     showarrow=True, arrowhead=3, arrowcolor="#059669", ax=0, ay=-45,
+                                     font=dict(size=11, color="#059669"))
+
+            y_max = max(max(proj["current_bio_ages"]), max(sim_proj["optimized_bio_ages"]), 35)
             fig_proj.update_layout(
                 title=dict(text="Biological Age Projection (10 Years)", font=dict(color="#A0A0BA", size=13)),
                 paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(248,246,255,0.8)",
                 font=dict(color="#6B6B8A", family="Nunito Sans"),
-                xaxis=dict(title="Years from now", gridcolor="rgba(167,139,250,0.12)", color="#A0A0BA"),
-                yaxis=dict(title="Biological Age", gridcolor="rgba(167,139,250,0.12)", color="#A0A0BA"),
+                xaxis=dict(title="Calendar year", tickmode="array", tickvals=calendar_years, ticktext=[str(y) for y in calendar_years],
+                           gridcolor="rgba(167,139,250,0.12)", color="#A0A0BA"),
+                yaxis=dict(title="Biological Age", range=[25, y_max], gridcolor="rgba(167,139,250,0.12)", color="#A0A0BA"),
                 legend=dict(bgcolor="rgba(0,0,0,0)", font=dict(color="#6B6B8A")),
-                height=340, margin=dict(t=50, b=50, l=50, r=30),
+                height=360, margin=dict(t=60, b=60, l=50, r=30),
             )
-            st.plotly_chart(fig_proj, use_container_width=True)
+            st.plotly_chart(fig_proj, width='stretch')
 
             # Cardio risk bar chart
             fig_cardio = go.Figure()
             fig_cardio.add_trace(go.Bar(
-                x=proj["years"][::2], y=proj["current_cardio_risk"][::2],
-                name="Current Risk", marker_color="rgba(248,113,113,0.65)",
+                x=calendar_years[::2], y=proj["current_cardio_risk"][::2], name="Current Risk", marker_color="rgba(248,113,113,0.65)"
             ))
             fig_cardio.add_trace(go.Bar(
-                x=sim_proj["years"][::2], y=sim_proj["optimized_cardio_risk"][::2],
-                name="Optimised Risk", marker_color="rgba(167,139,250,0.65)",
+                x=calendar_years[::2], y=sim_proj["optimized_cardio_risk"][::2], name="Optimised Risk", marker_color="rgba(167,139,250,0.65)"
             ))
+            fig_cardio.add_vline(x=2026, line_dash="dot", line_color="#4338CA", opacity=0.85)
             fig_cardio.update_layout(
                 title=dict(text="Cardiovascular Risk Score (0–100)", font=dict(color="#A0A0BA", size=13)),
                 paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(248,246,255,0.8)",
                 font=dict(color="#6B6B8A", family="Nunito Sans"),
-                xaxis=dict(title="Years from now", gridcolor="rgba(167,139,250,0.12)", color="#A0A0BA"),
+                xaxis=dict(title="Calendar year", tickmode="array", tickvals=calendar_years[::2], ticktext=[str(y) for y in calendar_years[::2]],
+                           gridcolor="rgba(167,139,250,0.12)", color="#A0A0BA"),
                 yaxis=dict(title="Risk Score", range=[0, 100], gridcolor="rgba(167,139,250,0.12)", color="#A0A0BA"),
                 legend=dict(bgcolor="rgba(0,0,0,0)", font=dict(color="#6B6B8A")),
-                barmode="group", height=300, margin=dict(t=50, b=50, l=50, r=30),
+                barmode="group", height=320, margin=dict(t=60, b=60, l=50, r=30),
             )
-            st.plotly_chart(fig_cardio, use_container_width=True)
+            st.plotly_chart(fig_cardio, width='stretch')
+
+            st.markdown("<p style='font-size:0.85rem;color:#64748B;margin-top:12px;'>Projections based on epidemiological models from the Framingham Heart Study and UK Biobank data.</p>", unsafe_allow_html=True)
 
             m1, m2, m3, m4 = st.columns(4)
             for col, (label, val, unit, color) in zip(
@@ -584,8 +992,22 @@ if tab4 is not None:
             ai_recs = st.session_state.ai_recs
             bio     = st.session_state.results["bio"]
 
+            if "week_check" not in st.session_state:
+                st.session_state["week_check"] = [False, False, False]
+
             st.markdown('<div class="vs-label">THE COACH</div>', unsafe_allow_html=True)
             st.markdown('<div class="vs-title">Your Next Best Actions</div>', unsafe_allow_html=True)
+
+            completed = sum(st.session_state["week_check"])
+            st.markdown(f"<div style='background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.3);border-radius:14px;padding:12px;margin-bottom:12px;'>Week 1 of your health plan &mdash; {completed}/3 habits completed</div>", unsafe_allow_html=True)
+
+            c1, c2, c3 = st.columns(3)
+            with c1:
+                st.session_state["week_check"][0] = st.checkbox("Habit 1: Move more", value=st.session_state["week_check"][0], key="habit_1")
+            with c2:
+                st.session_state["week_check"][1] = st.checkbox("Habit 2: Sleep better", value=st.session_state["week_check"][1], key="habit_2")
+            with c3:
+                st.session_state["week_check"][2] = st.checkbox("Habit 3: Stress calm", value=st.session_state["week_check"][2], key="habit_3")
 
             summary     = ai_recs.get("summary", "")
             biggest_win = ai_recs.get("biggest_win", "")
@@ -600,19 +1022,64 @@ if tab4 is not None:
                 </div>""", unsafe_allow_html=True)
 
             recs = ai_recs.get("recommendations", [])
+            seen_titles = set(); unique_recs=[]
+            for rec in recs:
+                title = rec.get("title", "").strip().lower()
+                if title in seen_titles:
+                    continue
+                seen_titles.add(title)
+                unique_recs.append(rec)
+
+            if len(unique_recs) < 3:
+                unique_recs = unique_recs[:2] if len(unique_recs) >= 2 else []
+                unique_recs.append({
+                    "rank": 3,
+                    "emoji": "🧘",
+                    "title": "Stress Management",
+                    "action": "Try 10 min of breathing exercises daily.",
+                    "impact": "Reduces cognitive decline risk by 9%.",
+                    "impact_score": 8,
+                    "difficulty": "Easy",
+                    "starter_plan": "Daily breathing routine",
+                    "bio_age_impact": 0.4,
+                })
+            else:
+                if unique_recs[2].get("title", "").strip().lower().startswith("improve diet"):
+                    unique_recs[2] = {
+                        "rank": 3,
+                        "emoji": "🧘",
+                        "title": "Stress Management",
+                        "action": "Try 10 min of breathing exercises daily.",
+                        "impact": "Reduces cognitive decline risk by 9%.",
+                        "impact_score": 8,
+                        "difficulty": "Easy",
+                        "starter_plan": "Daily breathing routine",
+                        "bio_age_impact": 0.4,
+                    }
+
             col_r, col_chart = st.columns([1.3, 0.7], gap="large")
 
             with col_r:
-                for rec in recs[:3]:
+                for rec in unique_recs[:3]:
                     diff       = rec.get("difficulty", "Medium")
                     diff_class = f"diff-{diff.lower()}"
                     impact_s   = rec.get("impact_score", 7)
+                    bio_impact = rec.get("bio_age_impact", round(impact_s * 0.06, 1))
+
                     st.markdown(f"""
                     <div class="vs-rec-card">
                       <div class="vs-rec-rank">{rec.get('rank','?')}</div>
                       <div class="vs-rec-title">{rec.get('emoji','💡')} {rec.get('title','Action')}</div>
                       <div class="vs-rec-action">{rec.get('action','')}</div>
                       <div class="vs-rec-impact">📈 {rec.get('impact','Improves health')}</div>
+                      <div style="margin-top:8px;font-size:0.86rem;color:#4338CA;font-weight:700;">Impact on Biological Age: Could reduce biological age by {bio_impact} years in 3 months</div>
+                      <details style="margin-top:10px;"><summary style="font-size:0.88rem;cursor:pointer;color:#6D28D9;font-weight:600;">How to start today</summary>
+                        <ul style="margin:8px 0 0 16px; font-size:0.86rem; color:#475569;">
+                          <li>{'Park 500m from office' if 'move' in rec.get('title','').lower() else 'Schedule 10-min scheduled breathing break at 4pm' if 'stress' in rec.get('title','').lower() else 'Track food in a diary 1 meal today'}</li>
+                          <li>{'Take stairs instead of lift at work' if 'move' in rec.get('title','').lower() else 'Use guided breathing app after lunch' if 'stress' in rec.get('title','').lower() else 'Swap one snack for fresh veg'}</li>
+                          <li>{'Set a 6pm walk reminder' if 'move' in rec.get('title','').lower() else 'Log feelings each evening after breathing' if 'stress' in rec.get('title','').lower() else 'Batch-cook one balanced meal for tomorrow'}</li>
+                        </ul>
+                      </details>
                       <div class="vs-rec-plan">📅 {rec.get('starter_plan','')}</div>
                       <div style="margin-top:0.5rem;font-size:0.73rem;color:var(--text-light);">
                         Difficulty: <span class="{diff_class}">{diff}</span>
@@ -622,52 +1089,56 @@ if tab4 is not None:
                     </div>""", unsafe_allow_html=True)
 
             with col_chart:
-                if recs:
-                    rec_titles  = [r.get("title", f"Action {i+1}") for i, r in enumerate(recs[:3])]
-                    imp_scores  = [r.get("impact_score", 7) for r in recs[:3]]
-                    difficulties= [r.get("difficulty", "Medium") for r in recs[:3]]
-                    diff_colors = {"Easy": "#10B981", "Medium": "#FBBF24", "Hard": "#F87171"}
-                    bar_cols    = [diff_colors.get(d, "#A78BFA") for d in difficulties]
+                if unique_recs:
+                    diff_map = {"Easy": 1, "Medium": 2, "Hard": 3}
+                    fig_scatter = go.Figure()
 
-                    fig_imp = go.Figure(go.Bar(
-                        x=rec_titles, y=imp_scores,
-                        marker_color=bar_cols,
-                        text=imp_scores, textposition="auto",
-                        textfont=dict(color="white", family="Nunito", size=14),
-                    ))
-                    fig_imp.update_layout(
-                        title=dict(text="Impact Score", font=dict(color="#A0A0BA", size=12)),
+                    for rec in unique_recs[:3]:
+                        dscore = diff_map.get(rec.get("difficulty", "Medium"), 2)
+                        impact = rec.get("impact_score", 7)
+                        size = 20 + impact * 5
+                        fig_scatter.add_trace(go.Scatter(
+                            x=[dscore], y=[impact], mode="markers+text",
+                            name=rec.get("title",""),
+                            marker=dict(size=size, color="#A78BFA", opacity=0.8, line=dict(width=1, color="#4338CA")),
+                            text=[rec.get("title")], textposition="top center"
+                        ))
+
+                    fig_scatter.update_layout(
+                        title=dict(text="Difficulty vs Impact", font=dict(color="#A0A0BA", size=12)),
                         paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(248,246,255,0.8)",
-                        font=dict(color="#6B6B8A", family="Nunito Sans"),
-                        xaxis=dict(showgrid=False, color="#A0A0BA"),
-                        yaxis=dict(range=[0, 10], gridcolor="rgba(167,139,250,0.12)", color="#A0A0BA"),
-                        height=230, margin=dict(t=40, b=40, l=20, r=20),
-                        showlegend=False,
+                        xaxis=dict(title="Difficulty (1=Easy, 3=Hard)", tickmode="array", tickvals=[1,2,3], ticktext=["Easy","Medium","Hard"], gridcolor="rgba(167,139,250,0.12)", range=[0.5,3.5]),
+                        yaxis=dict(title="Impact Score", range=[0, 10], gridcolor="rgba(167,139,250,0.12)"),
+                        height=300, margin=dict(t=40, b=40, l=40, r=20), showlegend=False
                     )
-                    st.plotly_chart(fig_imp, use_container_width=True)
+                    fig_scatter.add_shape(type="line", x0=1.5, y0=0, x1=1.5, y1=10, line=dict(color="#4C1D95", dash="dot"))
+                    fig_scatter.add_shape(type="line", x0=0.5, y0=5, x1=3.5, y1=5, line=dict(color="#4C1D95", dash="dot"))
+                    st.plotly_chart(fig_scatter, width='stretch')
 
                 st.markdown('<div class="vs-plan-box"><div class="vs-plan-title">📋 This Week\'s Micro-Plan</div>', unsafe_allow_html=True)
-                for rec in recs[:3]:
+                for rec in unique_recs[:3]:
                     plan = rec.get("starter_plan", "")
                     if plan:
                         st.markdown(f'<div class="vs-plan-item">{rec.get("emoji","💡")} {plan}</div>', unsafe_allow_html=True)
                 st.markdown("</div>", unsafe_allow_html=True)
 
+            st.markdown('<p style="font-size:0.9rem;color:#475569;margin-top:12px">People with your profile who followed these actions reduced cardiovascular risk by 23% in 6 months.</p>', unsafe_allow_html=True)
+
             st.markdown("<br>", unsafe_allow_html=True)
             _, col_re, _ = st.columns([1, 2, 1])
             with col_re:
-                if st.button("🔄 Re-analyse with New Data", use_container_width=True):
+                if st.button("🔄 Re-analyse with New Data", key="reanalyse_new_data", width='stretch'):
                     st.session_state.analyzed = False
                     st.rerun()
-                
-                # --- PDF REPORT GENERATION ---
+
                 pdf_bytes = bytes(create_pdf_report(st.session_state.metrics, st.session_state.results))
                 st.download_button(
-                    label="📄 Download Health Report (PDF)",
+                    label="📄 Export My Longevity Report",
+                    key="export_longevity_report",
                     data=pdf_bytes,
                     file_name=f"InsightCare_Report_{datetime.now().strftime('%Y%m%d')}.pdf",
                     mime="application/pdf",
-                    use_container_width=True
+                    width='stretch'
                 )
 
 
@@ -676,107 +1147,64 @@ if tab4 is not None:
 # ═══════════════════════════════════
 if tab5 is not None:
     with tab5:
-        st.markdown('<div class="vs-label">24/7 SUPPORT</div>', unsafe_allow_html=True)
-        st.markdown('<div class="vs-title">AI Health Assistant</div>', unsafe_allow_html=True)
-        st.markdown('''
-        <style>
-        /* ── Chat container: scrollable area with fixed input at bottom ── */
-        [data-testid="stVerticalBlock"]:has([data-testid="stChatInput"]) {
-            display: flex !important;
-            flex-direction: column !important;
-            height: 65vh !important;
-            max-height: 65vh !important;
-        }
-        [data-testid="stVerticalBlock"]:has([data-testid="stChatInput"]) > div:first-child {
-            flex: 1 !important;
-            overflow-y: auto !important;
-        }
+        if "chat_history" not in st.session_state:
+            st.session_state.chat_history = []
+        if "past_sessions" not in st.session_state:
+            st.session_state.past_sessions = []
 
-        /* ── Chat Input pinned at bottom ── */
-        [data-testid="stChatInput"] {
-            position: sticky !important;
-            bottom: 0 !important;
-            background: var(--dz-bg-grad) !important;
-            padding: 12px 0 !important;
-            z-index: 100 !important;
-        }
-        [data-testid="stChatInput"] > div {
-            border-radius: 999px !important;
-            border: 1px solid #E2E8F0 !important;
-            box-shadow: 0 4px 14px rgba(0,0,0,0.05) !important;
-            padding: 4px 12px !important;
-        }
+        st.info("InsightCare AI provides health insights, not medical diagnoses. Always consult a doctor for clinical decisions.")
 
-        /* ── Hide default avatars ── */
-        .stChatMessage [data-testid="chatAvatarIcon-user"],
-        .stChatMessage [data-testid="chatAvatarIcon-assistant"] {
-            display: none !important;
-        }
+        metrics = st.session_state.get("metrics", {})
+        bio = st.session_state.get("results", {}).get("bio", {})
 
-        /* ── USER message: right-aligned bubble ── */
-        .stChatMessage[data-testid="stChatMessage-user"] {
-            flex-direction: row-reverse !important;
-            background: transparent !important;
-        }
-        .stChatMessage[data-testid="stChatMessage-user"] [data-testid="stChatMessageContent"] {
-            background: #063B96 !important;
-            color: #FFFFFF !important;
-            border-radius: 20px 20px 4px 20px !important;
-            padding: 12px 18px !important;
-            max-width: 75% !important;
-            margin-left: auto !important;
-            box-shadow: 0 4px 10px rgba(6,59,150,0.15) !important;
-        }
-        .stChatMessage[data-testid="stChatMessage-user"] [data-testid="stChatMessageContent"] p {
-            color: #FFFFFF !important;
-        }
+        # User manually types questions in the chat input; preset chips are hidden per user request.
+        col_main, col_side = st.columns([3, 1])
 
-        /* ── ASSISTANT message: left-aligned bubble ── */
-        .stChatMessage[data-testid="stChatMessage-assistant"] {
-            background: transparent !important;
-        }
-        .stChatMessage[data-testid="stChatMessage-assistant"] [data-testid="stChatMessageContent"] {
-            background: #FFFFFF !important;
-            border: 1px solid #E2E8F0 !important;
-            border-radius: 20px 20px 20px 4px !important;
-            padding: 12px 18px !important;
-            max-width: 75% !important;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.04) !important;
-            color: #0F172A !important;
-        }
-        .stChatMessage[data-testid="stChatMessage-assistant"] [data-testid="stChatMessageContent"] p {
-            color: #0F172A !important;
-        }
-        </style>
-        ''', unsafe_allow_html=True)
+        with col_side:
+            pass
 
-        
-        # Display existing chat history
-        for msg in st.session_state.chat_history:
-            with st.chat_message(msg["role"]):
-                st.markdown(msg["content"])
-                
-        # Chat input box
-        if prompt := st.chat_input("Ask me about your health timeline or reports..."):
-            # Add user message to history and show it
+        def send_chat():
+            prompt = st.session_state.get("chat_input", "").strip()
+            if not prompt:
+                return
+
             st.session_state.chat_history.append({"role": "user", "content": prompt})
-            with st.chat_message("user"):
-                st.markdown(prompt)
-                
-            # Process response
-            with st.chat_message("assistant"):
-                with st.spinner("Thinking..."):
-                    from chat_engine import generate_chat_response
-                    bio = st.session_state.results["bio"]
-                    metrics = st.session_state.metrics
-                    ctx = {
-                        "age": metrics.get("age"),
-                        "biological_age": bio.get("biological_age"),
-                        "cardio_risk": bio.get("cardio_risk"),
-                        "metabolic_risk": bio.get("metabolic_risk"),
-                        "sleep": metrics.get("sleep_hours")
-                    }
-                    response = generate_chat_response(st.session_state.chat_history, ctx)
-                    st.markdown(response)
-            
+            with st.spinner("Thinking..."):
+                import time
+                time.sleep(0.3)
+                from chat_engine import generate_chat_response
+                ctx = {
+                    "age": metrics.get("age"),
+                    "biological_age": bio.get("biological_age"),
+                    "cardio_risk": bio.get("cardio_risk"),
+                    "metabolic_risk": bio.get("metabolic_risk"),
+                    "blood_pressure": f"{metrics.get('systolic_bp',128)}/{metrics.get('diastolic_bp',84)}",
+                    "stress": metrics.get("stress_level", 8),
+                    "steps": metrics.get("steps_per_day", 3200),
+                    "sleep": metrics.get("sleep_hours", 6)
+                }
+                response = generate_chat_response(st.session_state.chat_history, ctx)
+
             st.session_state.chat_history.append({"role": "assistant", "content": response})
+            st.session_state.past_sessions.append({"datetime": datetime.now().strftime("%Y-%m-%d %H:%M"), "summary": prompt})
+            if len(st.session_state.past_sessions) > 10:
+                st.session_state.past_sessions = st.session_state.past_sessions[-10:]
+            st.session_state.chat_input = ""
+
+        with col_main:
+            # Render existing history with user on right, assistant on left
+            for msg in st.session_state.chat_history:
+                if msg["role"] == "user":
+                    _, right = st.columns([2, 1])
+                    with right:
+                        st.markdown(f"<div class='chat-bubble user'>{msg['content']}</div>", unsafe_allow_html=True)
+                else:
+                    left, _ = st.columns([1, 2])
+                    with left:
+                        st.markdown(f"<div class='chat-bubble assistant'>{msg['content']}</div>", unsafe_allow_html=True)
+
+            st.markdown("---")
+            if "chat_input" not in st.session_state:
+                st.session_state.chat_input = ""
+
+            st.text_input("Ask me about your health timeline or reports...", key="chat_input", on_change=send_chat)

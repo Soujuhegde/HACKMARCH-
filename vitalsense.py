@@ -5,6 +5,7 @@ Run: python vitalsense.py
 """
 
 from flask import Flask, render_template, request, jsonify
+from biological_age import calculate_biological_age
 
 app = Flask(__name__)
 
@@ -21,20 +22,30 @@ def analyze():
     steps     = float(data.get("steps", 8000))
     stress    = float(data.get("stress", 5))
     systolic  = float(data.get("systolic", 120))
+    diastolic = float(data.get("diastolic", 80))
     diet      = float(data.get("diet", 6))
     exercise  = float(data.get("exercise", 150))
+    weight    = float(data.get("weight", 70))
+    height    = float(data.get("height", 170))
+    smoker    = bool(int(data.get("smoker", 0)))
 
-    # Biological age estimation formula
-    bio_age = age
-    bio_age += (stress - 5) * 0.8
-    bio_age -= (sleep - 6) * 0.5
-    bio_age -= (steps / 10000) * 2
-    bio_age -= (diet - 5) * 0.4
-    bio_age -= (exercise / 150) * 1.2
-    if systolic > 140:
-        bio_age += (systolic - 140) * 0.15
+    age_data = {
+        "age": age,
+        "weight_kg": weight,
+        "height_cm": height,
+        "sleep_hours": sleep,
+        "steps_per_day": steps,
+        "stress_level": stress,
+        "systolic_bp": systolic,
+        "diastolic_bp": diastolic,
+        "exercise_min_week": exercise,
+        "diet_quality": diet,
+        "smoker": smoker,
+        "alcohol_units_week": float(data.get("alcohol", 0))
+    }
 
-    bio_age = round(max(18, min(90, bio_age)), 1)
+    result = calculate_biological_age(age_data)
+    bio_age = result["biological_age"]
     delta = round(bio_age - age, 1)
 
     if bio_age > age + 3:
@@ -56,12 +67,31 @@ def analyze():
     if diet < 5:
         top_risks.append("Poor diet quality")
 
+    driver_candidates = [
+        ("High stress", max(0, (stress - 5) * 0.8)),
+        ("Low steps", max(0, (10000 - steps) / 10000 * 2)),
+        ("Low sleep", max(0, (7 - sleep) * 0.5)),
+        ("Suboptimal diet", max(0, (5 - diet) * 0.4)),
+        ("Low exercise", max(0, (150 - exercise) / 150 * 1.2)),
+        ("Elevated systolic BP", max(0, (systolic - 120) * 0.12))
+    ]
+
+    drivers_sorted = sorted(driver_candidates, key=lambda x: x[1], reverse=True)
+    top_drivers = [
+        {"label": label, "delta": round(val, 2)} for label,val in drivers_sorted if val > 0
+    ][:3]
+
     return jsonify({
         "biological_age": bio_age,
         "chronological_age": age,
         "delta": delta,
         "risk_level": risk_level,
-        "top_risks": top_risks[:3]
+        "cardio_risk": result["cardio_risk"],
+        "metabolic_risk": result["metabolic_risk"],
+        "cognitive_risk": result["cognitive_risk"],
+        "top_risks": top_risks[:3],
+        "top_drivers": top_drivers,
+        "percent_younger": int(max(45, min(95, 68 - delta * 2)))
     })
 
 if __name__ == "__main__":
