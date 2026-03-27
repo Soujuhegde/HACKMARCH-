@@ -9,10 +9,12 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import json
 import time
+from datetime import datetime
 
 from biological_age import calculate_biological_age, simulate_optimized_age
 from health_simulator import project_health_trajectory, calculate_life_expectancy_bonus
 from recommendation_engine import get_ai_recommendations
+from report_generator import create_pdf_report
 
 # ─────────────────────────────────────────────
 # PAGE CONFIG
@@ -661,6 +663,16 @@ if tab4 is not None:
                 if st.button("🔄 Re-analyse with New Data", use_container_width=True):
                     st.session_state.analyzed = False
                     st.rerun()
+                
+                # --- PDF REPORT GENERATION ---
+                pdf_bytes = bytes(create_pdf_report(st.session_state.metrics, st.session_state.results))
+                st.download_button(
+                    label="📄 Download Health Report (PDF)",
+                    data=pdf_bytes,
+                    file_name=f"InsightCare_Report_{datetime.now().strftime('%Y%m%d')}.pdf",
+                    mime="application/pdf",
+                    use_container_width=True
+                )
 
 
 # ═══════════════════════════════════
