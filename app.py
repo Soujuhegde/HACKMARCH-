@@ -15,6 +15,7 @@ from biological_age import calculate_biological_age, simulate_optimized_age
 from health_simulator import project_health_trajectory, calculate_life_expectancy_bonus
 from recommendation_engine import get_ai_recommendations
 from report_generator import create_pdf_report
+from vision_analyzer import analyze_face_image
 
 # ─────────────────────────────────────────────
 # PAGE CONFIG
@@ -212,7 +213,7 @@ SAMPLE_PROFILE = {
 # ─────────────────────────────────────────────
 # SESSION STATE
 # ─────────────────────────────────────────────
-for key, default in [("analyzed", False), ("results", None), ("metrics", None), ("ai_recs", None), ("chat_history", [])]:
+for key, default in [("analyzed", False), ("results", None), ("metrics", None), ("ai_recs", None), ("chat_history", []), ("vision_results", None)]:
     if key not in st.session_state:
         st.session_state[key] = default
 
@@ -328,6 +329,62 @@ with tab1:
         diet     = st.slider("Diet Quality (1–10)",   1, 10,     defaults.get("diet_quality", 6) or 6)
 
     st.markdown("<br>", unsafe_allow_html=True)
+    # ── 📸 Facial Health Scanner ──
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown('<div class="vs-label">NEW FEATURE · MULTIMODAL AI</div>', unsafe_allow_html=True)
+    with st.container():
+        st.markdown("""
+        <div class="vs-card">
+          <div class="vs-card-header">
+            <div class="vs-icon-wrap" style="background:rgba(6, 59, 150, 0.1); color:var(--dz-primary);">📸</div>
+            <span class="vs-card-title">Facial Health Scanner</span>
+          </div>
+          <div class="vs-divider"></div>
+          <p style="color:var(--dz-text-light); font-size:0.9rem; margin-bottom:1rem;">
+            Upload a photo or use your camera to scan for visible health indicators (Skin, Eyes, Fatigue).
+          </p>
+        </div>""", unsafe_allow_html=True)
+        
+        v_col1, v_col2 = st.columns([1, 1], gap="large")
+        with v_col1:
+            img_file = st.camera_input("Take a health selfie")
+            if not img_file:
+                img_file = st.file_uploader("Or upload a face photo", type=["jpg", "jpeg", "png"])
+        
+        with v_col2:
+            if img_file:
+                if st.button("🔍 Scan My Face", use_container_width=True):
+                    with st.spinner("Analyzing facial features..."):
+                        bytes_data = img_file.getvalue()
+                        results = analyze_face_image(bytes_data)
+                        st.session_state.vision_results = results
+                
+                if st.session_state.vision_results:
+                    v = st.session_state.vision_results
+                    if v.get("is_fallback"):
+                        st.warning(f"⚠️ {v.get('reason', 'AI Limited')}")
+                    else:
+                        st.success("✅ Facial Analysis Complete!")
+                        
+                    # Display metrics
+                    m_c1, m_c2, m_c3 = st.columns(3)
+                    m_c1.metric("Skin Health", v.get("skin", "N/A"))
+                    m_c2.metric("Eye Condition", v.get("eyes", "N/A"))
+                    m_c3.metric("Fatigue Level", v.get("fatigue", "N/A"))
+                    
+                    st.markdown(f"""
+                    <div style="background:rgba(6, 59, 150, 0.05); padding:1rem; border-radius:12px; border-left:4px solid var(--dz-primary);">
+                        <div style="font-size:0.8rem; text-transform:uppercase; color:var(--dz-primary); font-weight:700; margin-bottom:5px;">
+                            Strict Facial Insight
+                        </div>
+                        {v.get('summary', '')}
+                    </div>
+                    <p style="font-size:0.75rem; color:gray; margin-top:10px;">
+                        ⚠️ This analysis is based **strictly** on facial features and is not a medical diagnosis.
+                    </p>
+                    """, unsafe_allow_html=True)
+
+    st.markdown("<br>", unsafe_allow_html=True)
     _, col_btn, _ = st.columns([1, 2, 1])
     with col_btn:
         analyze = st.button("🔬  Analyze My Health", use_container_width=True)
@@ -352,7 +409,11 @@ with tab1:
                 ai_recs = get_fallback_recommendations(metrics, bio_result)
 
         st.session_state.analyzed = True
-        st.session_state.results  = {"bio": bio_result, "projection": projection}
+        st.session_state.results  = {
+            "bio": bio_result, 
+            "projection": projection,
+            "vision": st.session_state.vision_results
+        }
         st.session_state.metrics  = metrics
         st.session_state.ai_recs  = ai_recs
         st.rerun()
@@ -778,7 +839,8 @@ if tab5 is not None:
                         "biological_age": bio.get("biological_age"),
                         "cardio_risk": bio.get("cardio_risk"),
                         "metabolic_risk": bio.get("metabolic_risk"),
-                        "sleep": metrics.get("sleep_hours")
+                        "sleep": metrics.get("sleep_hours"),
+                        "vision": st.session_state.results.get("vision")
                     }
                     response = generate_chat_response(st.session_state.chat_history, ctx)
                     st.markdown(response)
