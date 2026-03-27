@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>InsightCare · Health Input</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800&family=Nunito+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:            #F8F6FF;
+      --surface:       #FFFFFF;
+      --surface-2:     #F3F0FF;
+      --accent-pink:   #FF6B8A;
+      --accent-purple: #A78BFA;
+      --accent-peach:  #FFB49A;
+      --accent-mint:   #6EE7B7;
+      --accent-lilac:  #C4B5FD;
+      --text-dark:     #2D2D3A;
+      --text-body:     #6B6B8A;
+      --text-light:    #A0A0BA;
+      --border:        rgba(167,139,250,0.15);
+      --shadow:        0 4px 24px rgba(167,139,250,0.12);
+    }
+
+    body {
+      font-family: 'Nunito Sans', sans-serif;
+      background: var(--bg);
+      background-image: radial-gradient(ellipse 800px 600px at 50% -100px, rgba(167,139,250,0.08), transparent);
+      color: var(--text-dark);
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    header {
+      position: sticky; top: 0; z-index: 100;
+      height: 64px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 2px 12px rgba(167,139,250,0.08);
+      padding: 0 32px;
+      display: flex; align-items: center; justify-content: space-between;
+      transition: box-shadow 0.3s;
+    }
+    header.scrolled { box-shadow: 0 4px 24px rgba(167,139,250,0.16); }
+
+    .logo { display: flex; align-items: center; gap: 10px; }
+    .logo-text { display: flex; flex-direction: column; }
+    .logo-name { font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 22px; color: var(--text-dark); line-height: 1; }
+    .logo-tagline { font-size: 12px; color: var(--text-light); font-weight: 400; margin-top: 2px; }
+
+    /* ── STEP BAR ── */
+    .step-bar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 32px;
+      height: 56px;
+      display: flex; align-items: center; gap: 0;
+      overflow-x: auto; scrollbar-width: none;
+    }
+    .step-bar::-webkit-scrollbar { display: none; }
+    .step-pill {
+      border-radius: 999px;
+      padding: 6px 18px;
+      font-family: 'Nunito Sans', sans-serif; font-weight: 600; font-size: 13px;
+      white-space: nowrap;
+      background: rgba(167,139,250,0.08);
+      color: var(--text-light);
+      border: 1px solid var(--border);
+      cursor: default;
+      transition: all 0.2s;
+    }
+    .step-pill.active {
+      background: var(--accent-purple);
+      color: white;
+      box-shadow: 0 4px 14px rgba(167,139,250,0.35);
+      border-color: transparent;
+    }
+    .step-connector { width: 24px; height: 1px; background: var(--border); flex-shrink: 0; }
+
+    /* ── HERO ── */
+    .hero {
+      padding: 36px 32px 0;
+      display: flex; align-items: center; gap: 32px;
+      opacity: 0; animation: fadeUp 0.4s ease 0s forwards;
+    }
+    .hero-left { flex: 0 0 60%; }
+    .hero-right { flex: 0 0 40%; display: flex; justify-content: flex-end;
+      opacity: 0; animation: fadeUp 0.5s ease 0.1s forwards; }
+
+    .hero-tag {
+      display: inline-block;
+      background: rgba(255,107,138,0.1); color: var(--accent-pink);
+      border-radius: 999px; padding: 4px 14px;
+      font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+    .hero-heading { font-family: 'Nunito', sans-serif; font-size: 36px; font-weight: 800; color: var(--text-dark); line-height: 1.15; margin-bottom: 12px; }
+    .hero-sub { font-size: 15px; color: var(--text-body); max-width: 360px; line-height: 1.6; margin-bottom: 24px; }
+
+    .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+    .ghost-btn {
+      background: white; border: 1.5px solid var(--border);
+      color: var(--text-body); border-radius: 999px;
+      padding: 10px 22px; font-family: 'Nunito Sans', sans-serif;
+      font-weight: 600; font-size: 14px; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .ghost-btn:hover { border-color: var(--accent-purple); color: var(--accent-purple); background: rgba(167,139,250,0.06); }
+
+    /* illustration svg container */
+    .hero-illustration { width: 280px; height: 200px; }
+
+    /* ── SAMPLE STRIP ── */
+    .sample-strip {
+      background: rgba(255,107,138,0.06);
+      border: 1px solid rgba(255,107,138,0.15);
+      border-radius: 14px;
+      padding: 14px 20px;
+      margin: 24px 32px 0;
+      display: flex; align-items: center; gap: 12px; cursor: pointer;
+      user-select: none;
+    }
+    .custom-checkbox {
+      width: 20px; height: 20px; border-radius: 6px; flex-shrink: 0;
+      border: 1.5px solid rgba(167,139,250,0.4);
+      background: transparent;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s;
+    }
+    .custom-checkbox.checked { background: var(--accent-pink); border-color: var(--accent-pink); }
+    .custom-checkbox svg { display: none; }
+    .custom-checkbox.checked svg { display: block; }
+    .sample-label { font-weight: 600; font-size: 14px; color: var(--text-dark); flex: 1; }
+    .sample-tag {
+      background: rgba(255,107,138,0.1); color: var(--accent-pink);
+      font-size: 12px; font-weight: 500; border-radius: 999px;
+      padding: 3px 12px; display: none;
+    }
+    .sample-tag.visible { display: inline-block; }
+
+    /* ── INFO BANNER ── */
+    .info-banner {
+      display: none;
+      background: white;
+      border-left: 3px solid var(--accent-pink);
+      border-radius: 0 12px 12px 0;
+      padding: 14px 20px;
+      margin: 12px 32px 0;
+      box-shadow: 0 2px 12px rgba(255,107,138,0.08);
+      font-size: 13.5px; color: var(--text-body); line-height: 1.5;
+    }
+    .info-banner.visible { display: block; }
+    .info-banner strong { color: var(--text-dark); font-weight: 700; }
+
+    /* ── CARDS GRID ── */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      padding: 24px 32px;
+    }
+
+    .card {
+      background: var(--surface);
+      border-radius: 20px;
+      padding: 26px 24px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      opacity: 0;
+    }
+    .card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(167,139,250,0.18); }
+    .card:nth-child(1) { animation: fadeUp 0.5s ease 0.05s forwards; }
+    .card:nth-child(2) { animation: fadeUp 0.5s ease 0.15s forwards; }
+    .card:nth-child(3) { animation: fadeUp 0.5s ease 0.25s forwards; }
+
+    .card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+    .card-icon-wrap {
+      width: 36px; height: 36px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+    }
+    .icon-lilac { background: rgba(196,181,253,0.2); }
+    .icon-peach { background: rgba(255,180,154,0.2); }
+    .icon-mint  { background: rgba(110,231,183,0.2); }
+
+    .card-title { font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-body); }
+    .card-divider { height: 1px; background: var(--border); margin: 0 0 18px; }
+
+    /* ── STEPPERS ── */
+    .field-group { margin-bottom: 18px; }
+    .field-label { font-size: 12px; font-weight: 500; color: var(--text-light); margin-bottom: 6px; }
+    .stepper-row { display: flex; align-items: center; gap: 8px; }
+    .value-box {
+      flex: 1; background: #F8F6FF;
+      border: 1.5px solid rgba(167,139,250,0.2);
+      border-radius: 12px; padding: 10px 16px;
+      text-align: center;
+      font-family: 'Nunito Sans', sans-serif; font-weight: 700; font-size: 17px;
+      color: var(--text-dark);
+    }
+    .step-btn {
+      width: 36px; height: 36px; border-radius: 10px;
+      border: 1.5px solid var(--border);
+      background: white; color: var(--text-body);
+      font-size: 18px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s; flex-shrink: 0;
+    }
+    .step-btn:hover { background: var(--accent-purple); color: white; border-color: var(--accent-purple); }
+
+    /* ── TOGGLE ── */
+    .toggle-row { display: flex; align-items: center; justify-content: space-between; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
+    .toggle-label { font-size: 14px; font-weight: 500; color: var(--text-dark); }
+    .pill-toggle {
+      width: 44px; height: 24px; border-radius: 999px;
+      background: rgba(167,139,250,0.15);
+      position: relative; cursor: pointer; transition: background 0.25s;
+    }
+    .pill-toggle.on { background: var(--accent-pink); }
+    .pill-toggle .knob {
+      position: absolute; top: 3px; left: 3px;
+      width: 18px; height: 18px; border-radius: 50%;
+      background: white; box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+      transition: left 0.25s;
+    }
+    .pill-toggle.on .knob { left: 23px; }
+
+    /* ── SLIDERS ── */
+    .slider-group { margin-bottom: 22px; position: relative; }
+    .slider-label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .slider-name { font-size: 13px; font-weight: 500; color: var(--text-dark); }
+    .slider-unit { font-size: 12px; color: var(--text-light); }
+    .slider-badge {
+      position: absolute; top: 0; transform: translateX(-50%);
+      background: var(--accent-pink); color: white;
+      font-size: 12px; font-weight: 700; font-family: 'Nunito Sans', sans-serif;
+      border-radius: 999px; padding: 3px 10px;
+      white-space: nowrap; pointer-events: none;
+      transition: left 0.05s;
+    }
+    .slider-badge.danger { background: #F87171; }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%; height: 8px; border-radius: 4px;
+      outline: none; cursor: pointer;
+      background: rgba(167,139,250,0.12);
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: white; border: 2.5px solid var(--accent-pink);
+      box-shadow: 0 2px 8px rgba(255,107,138,0.3);
+      transition: transform 0.1s;
+    }
+    input[type="range"]::-webkit-slider-thumb:active { transform: scale(1.25); }
+    input[type="range"].mint-slider::-webkit-slider-thumb { border-color: var(--accent-mint); box-shadow: 0 2px 8px rgba(110,231,183,0.3); }
+
+    /* ── CTA ── */
+    .cta-area { padding: 20px 32px 60px; display: flex; justify-content: center; }
+    .analyze-btn {
+      width: 100%; max-width: 480px; height: 56px;
+      background: linear-gradient(135deg, #FF6B8A 0%, #A78BFA 100%);
+      color: white; border-radius: 16px; border: none;
+      font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 17px;
+      letter-spacing: 0.02em; cursor: pointer;
+      box-shadow: 0 6px 24px rgba(255,107,138,0.3);
+      animation: softPulse 2.5s ease-in-out infinite;
+      transition: transform 0.2s, box-shadow 0.2s;
+      position: relative;
+    }
+    .analyze-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 36px rgba(255,107,138,0.45);
+      animation: none;
+    }
+    .analyze-btn:disabled { pointer-events: none; }
+    .btn-spinner {
+      display: none; width: 20px; height: 20px;
+      border: 2.5px solid rgba(255,255,255,0.4);
+      border-top-color: white; border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin: auto;
+    }
+    .analyze-btn.loading .btn-text { display: none; }
+    .analyze-btn.loading .btn-spinner { display: block; }
+
+    /* ── RESULT CARD ── */
+    #result-section { display: none; margin: 0 32px 40px; }
+    .result-card {
+      background: var(--surface);
+      border-radius: 20px;
+      padding: 28px 28px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+    }
+    .result-header { font-family: 'Nunito', sans-serif; font-size: 22px; font-weight: 800; color: var(--text-dark); margin-bottom: 6px; }
+    .result-sub { font-size: 14px; color: var(--text-body); margin-bottom: 24px; }
+    .result-stats { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 24px; }
+    .stat-pill {
+      flex: 1; min-width: 120px;
+      border-radius: 16px; padding: 18px 20px; text-align: center;
+    }
+    .stat-pill .stat-val { font-family:'Nunito',sans-serif; font-size:2.2rem; font-weight:800; line-height:1; }
+    .stat-pill .stat-label { font-size:12px; color:var(--text-light); margin-top:4px; font-weight:500; }
+    .stat-bio { background: rgba(255,107,138,0.08); }
+    .stat-bio .stat-val { color: var(--accent-pink); }
+    .stat-delta-pos { background: rgba(110,231,183,0.12); }
+    .stat-delta-pos .stat-val { color: #10B981; }
+    .stat-delta-neg { background: rgba(248,113,113,0.1); }
+    .stat-delta-neg .stat-val { color: #F87171; }
+    .risk-badge { display: inline-block; border-radius: 999px; padding: 5px 16px; font-weight: 700; font-size: 13px; }
+    .risk-low    { background: rgba(110,231,183,0.15); color: #059669; }
+    .risk-medium { background: rgba(255,180,154,0.2); color: #D97706; }
+    .risk-high   { background: rgba(248,113,113,0.12); color: #DC2626; }
+    .risks-list { margin-top: 14px; }
+    .risk-item { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 14px; color: var(--text-body); }
+    .risk-item:last-child { border-bottom: none; }
+    .risk-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent-pink); flex-shrink: 0; }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes softPulse {
+      0%,100% { box-shadow: 0 6px 24px rgba(255,107,138,0.3); }
+      50%      { box-shadow: 0 6px 36px rgba(255,107,138,0.55); }
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 1024px) {
+      .cards-grid { grid-template-columns: repeat(2, 1fr); }
+      .hero { flex-direction: column; gap: 20px; }
+      .hero-left { flex: 1; }
+      .hero-right { display: none; }
+    }
+    @media (max-width: 640px) {
+      .cards-grid { grid-template-columns: 1fr; }
+      header, .step-bar, .hero, .sample-strip, .info-banner, .cta-area, #result-section { padding-left: 16px; padding-right: 16px; }
+      .sample-strip { margin-left: 16px; margin-right: 16px; }
+      .info-banner { margin-left: 16px; margin-right: 16px; }
+      .cards-grid { padding: 16px; }
+      .hero-heading { font-size: 26px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header id="main-header">
+  <div class="logo">
+    <img src="/static/logo.png" alt="InsightCare Logo"
+         style="width:44px;height:44px;object-fit:contain;border-radius:10px;" />
+    <div class="logo-text">
+      <span class="logo-name">InsightCare</span>
+      <span class="logo-tagline">Your personal health companion</span>
+    </div>
+  </div>
+</header>
+
+
+<!-- STEP BAR -->
+<div class="step-bar">
+  <div class="step-pill active">🧬 Health Input</div>
+  <div class="step-connector"></div>
+  <div class="step-pill">🔬 Biological Age</div>
+  <div class="step-connector"></div>
+  <div class="step-pill">📈 Future Projection</div>
+  <div class="step-connector"></div>
+  <div class="step-pill">🎯 Action Plan</div>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-left">
+    <div class="hero-tag">STEP 01 · DATA COLLECTION</div>
+    <h1 class="hero-heading">Enter Your<br>Health Data</h1>
+    <p class="hero-sub">All values stay private. Use the sliders below or load a sample profile to see how it works.</p>
+    <div class="hero-actions">
+      <button class="ghost-btn" onclick="syncWearable()">⌚ Sync Wearable</button>
+      <button class="ghost-btn" onclick="loadSample()">👤 Load Sample Profile</button>
+    </div>
+  </div>
+  <div class="hero-right">
+    <svg class="hero-illustration" viewBox="0 0 280 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- Body silhouette -->
+      <ellipse cx="140" cy="80" rx="28" ry="34" fill="rgba(196,181,253,0.25)" stroke="#C4B5FD" stroke-width="1.5"/>
+      <!-- Head -->
+      <circle cx="140" cy="38" r="18" fill="rgba(255,107,138,0.15)" stroke="#FF6B8A" stroke-width="1.5"/>
+      <!-- Heart inside body -->
+      <path d="M134 80 C134 76 128 74 128 79 C128 83 134 88 140 93 C146 88 152 83 152 79 C152 74 146 76 146 80 C146 76 140 78 140 80 C140 78 134 76 134 80Z" fill="#FF6B8A" opacity="0.7"/>
+      <!-- Chart line bottom -->
+      <path d="M30 155 Q55 135 80 150 Q100 162 120 140 Q140 118 160 140 Q180 158 200 135 Q220 115 250 130" stroke="#A78BFA" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+      <!-- Decorative circles -->
+      <circle cx="48" cy="60" r="12" fill="rgba(255,180,154,0.3)" stroke="#FFB49A" stroke-width="1.5"/>
+      <circle cx="232" cy="55" r="16" fill="rgba(110,231,183,0.25)" stroke="#6EE7B7" stroke-width="1.5"/>
+      <circle cx="52" cy="145" r="8" fill="rgba(167,139,250,0.25)" stroke="#A78BFA" stroke-width="1.5"/>
+      <circle cx="228" cy="150" r="10" fill="rgba(255,107,138,0.15)" stroke="#FF6B8A" stroke-width="1.5"/>
+      <!-- Small dots -->
+      <circle cx="100" cy="40" r="4" fill="#FFB49A" opacity="0.6"/>
+      <circle cx="185" cy="35" r="5" fill="#C4B5FD" opacity="0.7"/>
+      <circle cx="165" cy="168" r="3.5" fill="#6EE7B7" opacity="0.8"/>
+      <!-- Heartbeat line near head -->
+      <path d="M85 38 Q90 32 95 38 Q97 41 100 38 Q104 33 108 38 Q110 41 115 38" stroke="#FF6B8A" stroke-width="1.8" stroke-linecap="round" fill="none" opacity="0.7"/>
+    </svg>
+  </div>
+</div>
+
+<!-- SAMPLE TOGGLE -->
+<div class="sample-strip" onclick="toggleSample()">
+  <div class="custom-checkbox" id="sampleCheck">
+    <svg width="12" height="10" viewBox="0 0 12 10" fill="none">
+      <polyline points="1,5 4.5,8.5 11,1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </div>
+  <span class="sample-label">🚀 Use sample profile — Riya, 32</span>
+  <span class="sample-tag" id="sampleTag">Sedentary · Poor sleep · High stress</span>
+</div>
+
+<!-- INFO BANNER -->
+<div class="info-banner" id="infoBanner">
+  <strong>Sample loaded:</strong> Riya, 32 · Sedentary job · Poor sleep · High stress. Edit any value below.
+</div>
+
+<!-- CARDS GRID -->
+<div class="cards-grid">
+
+  <!-- CARD 1: PERSONAL INFO -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon-wrap icon-lilac">👤</div>
+      <span class="card-title">Personal Info</span>
+    </div>
+    <div class="card-divider"></div>
+
+    <div class="field-group">
+      <div class="field-label">Age (years)</div>
+      <div class="stepper-row">
+        <button class="step-btn" onclick="stepVal('age',-1,18,100)">−</button>
+        <div class="value-box" id="age-display">32</div>
+        <input type="hidden" id="age" value="32" min="18" max="100">
+        <button class="step-btn" onclick="stepVal('age',1,18,100)">+</button>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <div class="field-label">Weight (kg)</div>
+      <div class="stepper-row">
+        <button class="step-btn" onclick="stepVal('weight',-0.5,30,200)">−</button>
+        <div class="value-box" id="weight-display">62.0</div>
+        <input type="hidden" id="weight" value="62" min="30" max="200" step="0.5">
+        <button class="step-btn" onclick="stepVal('weight',0.5,30,200)">+</button>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <div class="field-label">Height (cm)</div>
+      <div class="stepper-row">
+        <button class="step-btn" onclick="stepVal('height',-1,120,220)">−</button>
+        <div class="value-box" id="height-display">163</div>
+        <input type="hidden" id="height" value="163" min="120" max="220">
+        <button class="step-btn" onclick="stepVal('height',1,120,220)">+</button>
+      </div>
+    </div>
+
+    <div class="toggle-row">
+      <span class="toggle-label">Smoker</span>
+      <div class="pill-toggle" id="smokerToggle" onclick="toggleSmoker()">
+        <div class="knob"></div>
+      </div>
+    </div>
+    <input type="hidden" id="smoker" value="0">
+  </div>
+
+  <!-- CARD 2: VITALS -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon-wrap icon-peach">💓</div>
+      <span class="card-title">Vitals</span>
+    </div>
+    <div class="card-divider"></div>
+
+    <div class="slider-group">
+      <div class="slider-label-row">
+        <span class="slider-name">Resting Heart Rate</span>
+        <span class="slider-unit">bpm</span>
+      </div>
+      <div class="slider-badge" id="badge-rhr">82</div>
+      <input type="range" id="rhr" min="40" max="120" value="82" step="1"
+             oninput="updateSlider(this,'badge-rhr',null,100)">
+    </div>
+
+    <div class="slider-group">
+      <div class="slider-label-row">
+        <span class="slider-name">Systolic BP</span>
+        <span class="slider-unit">mmHg</span>
+      </div>
+      <div class="slider-badge" id="badge-sys">128</div>
+      <input type="range" id="systolic" min="90" max="180" value="128" step="1"
+             oninput="updateSlider(this,'badge-sys',null,140)">
+    </div>
+
+    <div class="slider-group">
+      <div class="slider-label-row">
+        <span class="slider-name">Diastolic BP</span>
+        <span class="slider-unit">mmHg</span>
+      </div>
+      <div class="slider-badge" id="badge-dia">84</div>
+      <input type="range" id="diastolic" min="60" max="120" value="84" step="1"
+             oninput="updateSlider(this,'badge-dia',null,90)">
+    </div>
+
+    <div class="slider-group">
+      <div class="slider-label-row">
+        <span class="slider-name">Alcohol</span>
+        <span class="slider-unit">units/week</span>
+      </div>
+      <div class="slider-badge" id="badge-alc">4</div>
+      <input type="range" id="alcohol" min="0" max="30" value="4" step="1"
+             oninput="updateSlider(this,'badge-alc',null,14)">
+    </div>
+  </div>
+
+  <!-- CARD 3: LIFESTYLE -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon-wrap icon-mint">🏃</div>
+      <span class="card-title">Lifestyle</span>
+    </div>
+    <div class="card-divider"></div>
+
+    <div class="slider-group">
+      <div class="slider-label-row">
+        <span class="slider-name">Sleep</span>
+        <span class="slider-unit">hours/night</span>
+      </div>
+      <div class="slider-badge" id="badge-sleep">5.5</div>
+      <input type="range" id="sleep" min="3" max="12" value="5.5" step="0.5" class="mint-slider"
+             oninput="updateSlider(this,'badge-sleep',6,null,'mint')">
+    </div>
+
+    <div class="slider-group">
+      <div class="slider-label-row">
+        <span class="slider-name">Daily Steps</span>
+        <span class="slider-unit">steps</span>
+      </div>
+      <div class="slider-badge" id="badge-steps">3,200</div>
+      <input type="range" id="steps" min="0" max="20000" value="3200" step="100" class="mint-slider"
+             oninput="updateSlider(this,'badge-steps',5000,null,'mint')">
+    </div>
+
+    <div class="slider-group">
+      <div class="slider-label-row">
+        <span class="slider-name">Exercise</span>
+        <span class="slider-unit">min/week</span>
+      </div>
+      <div class="slider-badge" id="badge-ex">40</div>
+      <input type="range" id="exercise" min="0" max="600" value="40" step="5" class="mint-slider"
+             oninput="updateSlider(this,'badge-ex',150,null,'mint')">
+    </div>
+
+    <div class="slider-group">
+      <div class="slider-label-row">
+        <span class="slider-name">Stress Level</span>
+        <span class="slider-unit">1–10</span>
+      </div>
+      <div class="slider-badge" id="badge-stress">8</div>
+      <input type="range" id="stress" min="1" max="10" value="8" step="1" class="mint-slider"
+             oninput="updateSlider(this,'badge-stress',null,7,'mint')">
+    </div>
+
+    <div class="slider-group">
+      <div class="slider-label-row">
+        <span class="slider-name">Diet Quality</span>
+        <span class="slider-unit">1–10</span>
+      </div>
+      <div class="slider-badge" id="badge-diet">5</div>
+      <input type="range" id="diet" min="1" max="10" value="5" step="1" class="mint-slider"
+             oninput="updateSlider(this,'badge-diet',5,null,'mint')">
+    </div>
+  </div>
+
+</div><!-- end cards-grid -->
+
+<!-- CTA -->
+<div class="cta-area">
+  <button class="analyze-btn" id="analyzeBtn" onclick="doAnalyze()">
+    <span class="btn-text">🔬&nbsp;&nbsp;Analyze My Health</span>
+    <div class="btn-spinner"></div>
+  </button>
+</div>
+
+<!-- RESULT SECTION -->
+<div id="result-section">
+  <div class="result-card">
+    <div class="result-header">Your Biological Age</div>
+    <div class="result-sub" id="res-sub">Based on your health inputs, here's what the data says.</div>
+    <div class="result-stats">
+      <div class="stat-pill stat-bio">
+        <div class="stat-val" id="res-bio-age">—</div>
+        <div class="stat-label">Biological Age</div>
+      </div>
+      <div class="stat-pill" id="res-delta-pill">
+        <div class="stat-val" id="res-delta">—</div>
+        <div class="stat-label">vs Your Real Age</div>
+      </div>
+    </div>
+    <div>
+      <span style="font-size:13px; font-weight:600; color:var(--text-body);">Risk Level: </span>
+      <span class="risk-badge" id="res-risk">—</span>
+    </div>
+    <div class="risks-list" id="res-risks-list"></div>
+  </div>
+</div>
+
+<script>
+  // ── SLIDER UPDATE ──
+  function updateSlider(el, badgeId, dangerMin, dangerMax, type) {
+    const badge = document.getElementById(badgeId);
+    const val = parseFloat(el.value);
+    const min = parseFloat(el.min), max = parseFloat(el.max);
+    const pct = (val - min) / (max - min);
+
+    // Format display
+    if (badgeId === 'badge-steps') {
+      badge.textContent = Math.round(val).toLocaleString();
+    } else {
+      badge.textContent = Number.isInteger(val) ? val : val.toFixed(1);
+    }
+
+    // Position badge (clamp between 5%–95%)
+    const pos = Math.min(Math.max(pct * 100, 5), 95);
+    badge.style.left = 'calc(' + pos + '% )';
+
+    // Danger color
+    let isDanger = false;
+    if (dangerMax !== null && val > dangerMax) isDanger = true;
+    if (dangerMin !== null && val < dangerMin) isDanger = true;
+    badge.className = 'slider-badge' + (isDanger ? ' danger' : '');
+
+    // Fill gradient
+    const fillColor = type === 'mint' ? '#6EE7B7' : '#FF6B8A';
+    const fillEnd   = type === 'mint' ? '#A78BFA' : '#A78BFA';
+    el.style.background = `linear-gradient(to right, ${fillColor} 0%, ${fillEnd} ${pct*100}%, rgba(167,139,250,0.12) ${pct*100}%, rgba(167,139,250,0.12) 100%)`;
+  }
+
+  // Init all sliders
+  document.querySelectorAll('input[type="range"]').forEach(el => {
+    el.dispatchEvent(new Event('input'));
+  });
+
+  // ── STEPPER ──
+  function stepVal(id, delta, minVal, maxVal) {
+    const inp = document.getElementById(id);
+    const step = parseFloat(inp.step) || 1;
+    let val = parseFloat(inp.value) + delta * step;
+    val = Math.min(Math.max(val, minVal), maxVal);
+    inp.value = val;
+    const disp = document.getElementById(id + '-display');
+    if (disp) disp.textContent = Number.isInteger(val) ? val : val.toFixed(1);
+  }
+
+  // ── SMOKER TOGGLE ──
+  function toggleSmoker() {
+    const t = document.getElementById('smokerToggle');
+    const inp = document.getElementById('smoker');
+    t.classList.toggle('on');
+    inp.value = t.classList.contains('on') ? '1' : '0';
+  }
+
+  // ── SAMPLE PROFILE ──
+  const RIYA = { age:32, weight:62, height:163, rhr:82, systolic:128, diastolic:84, alcohol:4, sleep:5.5, steps:3200, exercise:40, stress:8, diet:5 };
+  let sampleActive = false;
+
+  function toggleSample() {
+    sampleActive = !sampleActive;
+    const check = document.getElementById('sampleCheck');
+    const tag   = document.getElementById('sampleTag');
+    const banner= document.getElementById('infoBanner');
+    check.classList.toggle('checked', sampleActive);
+    tag.classList.toggle('visible', sampleActive);
+    banner.classList.toggle('visible', sampleActive);
+    if (sampleActive) fillSample();
+  }
+
+  function fillSample() {
+    setVal('age', RIYA.age); setVal('weight', RIYA.weight); setVal('height', RIYA.height);
+    setSlider('rhr', RIYA.rhr, 'badge-rhr', null, 100);
+    setSlider('systolic', RIYA.systolic, 'badge-sys', null, 140);
+    setSlider('diastolic', RIYA.diastolic, 'badge-dia', null, 90);
+    setSlider('alcohol', RIYA.alcohol, 'badge-alc', null, 14);
+    setSlider('sleep', RIYA.sleep, 'badge-sleep', 6, null, 'mint');
+    setSlider('steps', RIYA.steps, 'badge-steps', 5000, null, 'mint');
+    setSlider('exercise', RIYA.exercise, 'badge-ex', 150, null, 'mint');
+    setSlider('stress', RIYA.stress, 'badge-stress', null, 7, 'mint');
+    setSlider('diet', RIYA.diet, 'badge-diet', 5, null, 'mint');
+  }
+
+  function setVal(id, v) {
+    const inp = document.getElementById(id);
+    inp.value = v;
+    const disp = document.getElementById(id + '-display');
+    if (disp) disp.textContent = Number.isInteger(v) ? v : v.toFixed(1);
+  }
+
+  function setSlider(id, v, badgeId, dMin, dMax, type) {
+    const el = document.getElementById(id);
+    el.value = v;
+    updateSlider(el, badgeId, dMin, dMax, type);
+  }
+
+  function loadSample() {
+    if (!sampleActive) toggleSample();
+    document.querySelector('.cards-grid').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function syncWearable() {
+    // No-op placeholder
+    alert('Wearable sync would connect via Bluetooth in the full app 👟');
+  }
+
+  // ── ANALYZE ──
+  async function doAnalyze() {
+    const btn = document.getElementById('analyzeBtn');
+    btn.classList.add('loading');
+    btn.disabled = true;
+
+    const payload = {
+      age:      parseFloat(document.getElementById('age').value),
+      sleep:    parseFloat(document.getElementById('sleep').value),
+      steps:    parseFloat(document.getElementById('steps').value),
+      stress:   parseFloat(document.getElementById('stress').value),
+      systolic: parseFloat(document.getElementById('systolic').value),
+      diet:     parseFloat(document.getElementById('diet').value),
+      exercise: parseFloat(document.getElementById('exercise').value),
+    };
+
+    try {
+      const resp = await fetch('/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await resp.json();
+      showResult(data, payload.age);
+    } catch (e) {
+      alert('Analysis failed. Make sure the server is running.');
+    }
+
+    setTimeout(() => {
+      btn.classList.remove('loading');
+      btn.disabled = false;
+    }, 1500);
+  }
+
+  function showResult(data, age) {
+    const sect = document.getElementById('result-section');
+    sect.style.display = 'block';
+    sect.scrollIntoView({ behavior: 'smooth' });
+
+    document.getElementById('res-bio-age').textContent = data.biological_age;
+    const delta  = data.delta;
+    const dEl    = document.getElementById('res-delta');
+    const dPill  = document.getElementById('res-delta-pill');
+    dEl.textContent = (delta > 0 ? '+' : '') + delta + ' yrs';
+    dPill.className = 'stat-pill ' + (delta > 0 ? 'stat-delta-neg' : 'stat-delta-pos');
+
+    const riskEl = document.getElementById('res-risk');
+    riskEl.textContent = data.risk_level;
+    riskEl.className = 'risk-badge risk-' + data.risk_level.toLowerCase();
+
+    const listEl = document.getElementById('res-risks-list');
+    listEl.innerHTML = '';
+    if (data.top_risks.length) {
+      data.top_risks.forEach(r => {
+        listEl.innerHTML += `<div class="risk-item"><div class="risk-dot"></div>${r}</div>`;
+      });
+    } else {
+      listEl.innerHTML = '<div class="risk-item" style="color:#059669;">✅ No major risk factors detected — great work!</div>';
+    }
+
+    document.getElementById('res-sub').textContent =
+      delta > 0
+        ? `Your body is aging ${Math.abs(delta)} years faster than expected. Here's what's driving it:`
+        : `Great news! Your body is ${Math.abs(delta)} years younger than your real age.`;
+  }
+
+  // ── SCROLL HEADER SHADOW ──
+  window.addEventListener('scroll', () => {
+    document.getElementById('main-header').classList.toggle('scrolled', window.scrollY > 10);
+  });
+</script>
+</body>
+</html>
