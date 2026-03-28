@@ -16,6 +16,8 @@ from biological_age import calculate_biological_age, simulate_optimized_age
 from health_simulator import project_health_trajectory, calculate_life_expectancy_bonus
 from recommendation_engine import get_ai_recommendations
 from report_generator import create_pdf_report
+from reminder_system import generate_reminders_from_recs
+import uuid
 
 # ─────────────────────────────────────────────
 # PAGE CONFIG
@@ -153,14 +155,14 @@ h1, h2, h3, h4, h5, h6 {
 }
 .stTabs [data-baseweb="tab-panel"] { padding-top: 2rem !important; }
 
-.stNumberInput > div > div > input, .stSelectbox > div > div > div {
+.stNumberInput > div > div > input {
     background: rgba(255, 255, 255, 0.7) !important;
     border: 1px solid rgba(255, 255, 255, 0.9) !important;
     border-radius: 999px !important; color: var(--dz-text) !important;
     padding: 0.8rem 1.2rem !important; transition: all 0.3s ease !important;
     font-weight: 500 !important; box-shadow: inset 0 2px 5px rgba(0,0,0,0.02) !important;
 }
-.stNumberInput > div > div > input:focus, .stSelectbox > div > div > div:focus-within {
+.stNumberInput > div > div > input:focus {
     box-shadow: var(--dz-glow) !important; border-color: var(--dz-primary) !important; background: #FFFFFF !important;
 }
 label[data-testid="stWidgetLabel"] { color: var(--dz-text) !important; font-weight: 600 !important; padding-bottom: 0.4rem !important; font-size: 0.9rem !important; }
@@ -173,7 +175,8 @@ label[data-testid="stWidgetLabel"] { color: var(--dz-text) !important; font-weig
 .stSlider > div { color: var(--dz-text) !important; }
 
 .stCheckbox > label { font-weight: 500 !important; color: var(--dz-text) !important; }
-.stCheckbox [data-baseweb="checkbox"] > div:first-child { background: var(--dz-primary) !important; border-color: var(--dz-primary) !important; border-radius: 8px !important; }
+
+
 
 .stButton > button {
     background: var(--dz-primary-grad) !important; color: white !important;
@@ -208,6 +211,13 @@ hr { border-color: var(--dz-border) !important; }
 .diff-easy { color: #88D4B5; font-weight: 600; }
 .diff-medium { color: #FFB49A; font-weight: 600; }
 .diff-hard { color: #FF6B8A; font-weight: 600; }
+
+.vs-reminder-card { background: var(--dz-surface); border: 1px solid var(--dz-border); border-radius: var(--dz-radius); padding: 16px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; box-shadow: var(--dz-shadow); transition: all 0.2s ease; }
+.vs-reminder-card:hover { transform: translateY(-2px); box-shadow: 0 8px 16px rgba(42, 82, 152, 0.08); border-color: #88D4B5; }
+.vs-reminder-details { flex-grow: 1; margin-left: 16px; }
+.vs-reminder-title { font-weight: 700; font-size: 1.05rem; color: #1E293B; margin-bottom: 4px; }
+.vs-reminder-desc { font-size: 0.85rem; color: #64748B; margin-bottom: 6px; }
+.vs-reminder-meta { font-size: 0.75rem; color: #4338CA; font-weight: 600; background: rgba(67, 56, 202, 0.1); padding: 4px 10px; border-radius: 999px; display: inline-flex; align-items: center; gap: 4px; }
 
 .health-status-green { color: #10B981; font-size: 0.85rem; font-weight: 700; margin-bottom: 0.5rem; display: block; }
 .health-status-amber { color: #F59E0B; font-size: 0.85rem; font-weight: 700; margin-bottom: 0.5rem; display: block; }
@@ -245,7 +255,7 @@ hr { border-color: var(--dz-border) !important; }
 # SESSION STATE
 # ─────────────────────────────────────────────
 for key, default_val in [
-    ("analyzed", False), ("results", None), ("metrics", None), ("ai_recs", None), ("chat_history", []), ("scroll_to_top", False)
+    ("analyzed", False), ("results", None), ("metrics", None), ("ai_recs", None), ("chat_history", []), ("scroll_to_top", False), ("reminders", [])
 ]:
     if key not in st.session_state:
         st.session_state[key] = default_val
@@ -1052,6 +1062,172 @@ if tab4 is not None:
                     mime="application/pdf",
                     use_container_width=True
                 )
+
+            st.markdown("---")
+            st.markdown('<div class="vs-label">STAY ON TRACK</div>', unsafe_allow_html=True)
+            st.markdown('<div class="vs-title">Smart Reminders</div>', unsafe_allow_html=True)
+
+            col_left, col_right = st.columns([2, 1], gap="large")
+
+            with col_left:
+                st.markdown("### 🔔 Active Reminders")
+                
+                if not st.session_state.reminders:
+                    st.info("You don't have any reminders set up yet.")
+                else:
+                    for idx, rem in enumerate(st.session_state.reminders):
+                        card_col2, card_col3 = st.columns([0.85, 0.15], vertical_alignment="center")
+                        
+                        is_enabled = rem.get("enabled", True)
+                                
+                        with card_col2:
+                            opacity = "0.5" if not is_enabled else "1.0"
+                            st.markdown(f'''
+                            <div style="opacity: {opacity};">
+                                <div class="vs-reminder-title">{rem["title"]}</div>
+                                <div class="vs-reminder-desc">{rem["description"]}</div>
+                                <div class="vs-reminder-meta">🕒 {rem["time"]} • 📅 {rem.get("frequency", "Daily")}</div>
+                            </div>
+                            ''', unsafe_allow_html=True)
+                            
+                        with card_col3:
+                            enabled = st.toggle("On", value=is_enabled, key=f"tog_{rem['id']}")
+                            if enabled != is_enabled:
+                                st.session_state.reminders[idx]["enabled"] = enabled
+                                st.rerun()
+                                
+                        with st.expander("✏️ Edit Schedule", expanded=False):
+                            try:
+                                dt = datetime.strptime(rem["time"], "%I:%M %p").time()
+                            except Exception:
+                                dt = datetime.now().time()
+                                
+                            col_eti, col_efr = st.columns(2)
+                            with col_eti:
+                                new_t = st.time_input("Time", value=dt, key=f"time_{rem['id']}", step=60)
+                                new_t_str = new_t.strftime("%I:%M %p")
+                                if new_t_str != rem["time"]:
+                                    st.session_state.reminders[idx]["time"] = new_t_str
+                                    st.rerun()
+                            with col_efr:
+                                new_f = st.selectbox("Frequency", ["Daily", "Weekly", "Monthly", "Once"], 
+                                                     index=["Daily", "Weekly", "Monthly", "Once"].index(rem.get("frequency", "Daily")),
+                                                     key=f"freq_{rem['id']}")
+                                if new_f != rem.get("frequency"):
+                                    st.session_state.reminders[idx]["frequency"] = new_f
+                                    st.rerun()
+                                    
+                        st.markdown("<hr style='margin: 8px 0; border-top: 1px dashed var(--dz-border);'>", unsafe_allow_html=True)
+
+                active_count = sum(1 for r in st.session_state.reminders if r.get("enabled", True))
+                
+                if active_count > 0:
+                    st.info(f"You have {active_count} active reminders scheduled for today.")
+                else:
+                    st.warning("All reminders are currently turned off.")
+
+            with col_right:
+                st.markdown("""
+                <div class="vs-card">
+                  <h4 style="margin-top:0;">🤖 AI Auto-Generate</h4>
+                  <p style="font-size: 0.85rem; color: #64748B;">Generate a tailored reminder schedule based on your Action Plan.</p>
+                """, unsafe_allow_html=True)
+                
+                if st.button("Generate from Action Plan", use_container_width=True):
+                    if st.session_state.ai_recs:
+                        new_rems = generate_reminders_from_recs(st.session_state.ai_recs.get("recommendations", []))
+                        st.session_state.reminders = new_rems
+                        st.rerun()
+                    else:
+                        st.error("Please analyze your health first to generate reminders.")
+                        
+                st.markdown("</div>", unsafe_allow_html=True)
+                
+                st.markdown("""
+                <div class="vs-card" style="margin-top: 1rem;">
+                  <h4 style="margin-top:0;">➕ Add Custom Reminder</h4>
+                """, unsafe_allow_html=True)
+                
+                with st.form("add_reminder_form", clear_on_submit=True):
+                    new_title = st.text_input("Title", placeholder="E.g., Take Supplements")
+                    new_desc = st.text_input("Description", placeholder="Vitamin D & Omega 3")
+                    col_t, col_f = st.columns(2)
+                    with col_t:
+                        new_time = st.time_input("Time", step=60)
+                    with col_f:
+                        new_freq = st.selectbox("Frequency", ["Daily", "Weekly", "Monthly", "Once"])
+                    
+                    submitted = st.form_submit_button("Save Reminder", use_container_width=True)
+                    if submitted:
+                        if new_title.strip() == "":
+                            st.error("Title cannot be empty")
+                        else:
+                            st.session_state.reminders.append({
+                                "id": str(uuid.uuid4())[:8],
+                                "title": "📌 " + new_title,
+                                "description": new_desc,
+                                "time": new_time.strftime("%I:%M %p"),
+                                "frequency": new_freq,
+                                "enabled": True,
+                                "completed_today": False,
+                                "type": "Custom"
+                            })
+                            st.rerun()
+                st.markdown("</div>", unsafe_allow_html=True)
+
+            active_rems = [r for r in st.session_state.reminders if r.get("enabled", True)]
+            rems_json = json.dumps(active_rems)
+            
+            components.html(f"""
+            <script>
+            const reminders = {rems_json};
+            setInterval(() => {{
+                const now = new Date();
+                const currentHours = now.getHours();
+                const currentMinutes = now.getMinutes();
+                
+                reminders.forEach(rem => {{
+                    const timeParts = rem.time.match(/(\\d+):(\\d+)\\s*(AM|PM)/i);
+                    if (!timeParts) return;
+                    let h = parseInt(timeParts[1], 10);
+                    const m = parseInt(timeParts[2], 10);
+                    const ampm = timeParts[3].toUpperCase();
+                    
+                    if (ampm === 'PM' && h < 12) h += 12;
+                    if (ampm === 'AM' && h === 12) h = 0;
+                    
+                    const remKey = rem.id + "_" + now.toDateString() + "_" + h + "_" + m;
+                    if (currentHours === h && currentMinutes === m && !localStorage.getItem(remKey)) {{
+                        localStorage.setItem(remKey, "true");
+                        
+                        try {{
+                            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                            
+                            // 20-second continuous beep
+                            const os = ctx.createOscillator();
+                            const gain = ctx.createGain();
+                            os.connect(gain);
+                            gain.connect(ctx.destination);
+                            os.type = 'sine';
+                            os.frequency.value = 880; // A5 note
+                            
+                            gain.gain.setValueAtTime(0.5, ctx.currentTime);
+                            gain.gain.setValueAtTime(0.5, ctx.currentTime + 19.5);
+                            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 20.0);
+                            
+                            os.start(ctx.currentTime);
+                            os.stop(ctx.currentTime + 20.5);
+                            
+                        }} catch(e) {{
+                            console.log("AudioContext not supported or disabled");
+                        }}
+                        
+                        alert("⏰ REMINDER: " + rem.title + "\\n" + (rem.description || ""));
+                    }}
+                }});
+            }}, 20000);
+            </script>
+            """, height=0)
 
 
 # ═══════════════════════════════════

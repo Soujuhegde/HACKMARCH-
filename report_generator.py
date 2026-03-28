@@ -102,4 +102,7 @@ def create_pdf_report(metrics: dict, results: dict):
     pdf.set_text_color(200, 0, 0) # Red for disclaimer
     pdf.multi_cell(180, 5, "DISCLAIMER: This report is AI-generated and for informational purposes only. It is NOT a medical diagnosis or a substitute for professional medical advice. Always consult a qualified healthcare provider for medical concerns.", align="C")
 
-    return pdf.output(dest="S").encode("latin-1")
+    pdf_out = pdf.output(dest="S")
+    if isinstance(pdf_out, str):
+        return pdf_out.encode("latin-1")
+    return bytes(pdf_out)
