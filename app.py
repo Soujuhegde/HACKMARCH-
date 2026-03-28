@@ -17,6 +17,8 @@ from health_simulator import project_health_trajectory, calculate_life_expectanc
 from recommendation_engine import get_ai_recommendations
 from report_generator import create_pdf_report
 from reminder_system import generate_reminders_from_recs
+from explanation_engine import get_explanations
+from projection_explainer import explain_projection
 import uuid
 
 # ─────────────────────────────────────────────
@@ -274,8 +276,12 @@ label[data-testid="stWidgetLabel"] { color: var(--dz-text) !important; font-weig
 hr { border-color: var(--dz-border) !important; }
 
 .vs-risk-bg {
-    flex: 1; height: 8px; background: rgba(168, 85, 247, 0.15);
+    flex: 1; height: 8px; background: #E2E8F0;
     border-radius: 4px; overflow: hidden;
+}
+.vs-risk-fill {
+    height: 100%;
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .diff-easy { color: #88D4B5; font-weight: 600; }
@@ -317,6 +323,40 @@ hr { border-color: var(--dz-border) !important; }
 .share-badge { background: linear-gradient(135deg, #1E293B 0%, #4338CA 100%); color: white; padding: 20px; border-radius: 16px; text-align: center; margin-top: 2rem; box-shadow: 0 10px 25px rgba(30, 41, 59, 0.2); }
 .share-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 5px; }
 .share-subtitle { font-size: 0.9rem; opacity: 0.9; }
+
+.ai-input-card { background: transparent; border: none; border-radius: 0; padding: 0; box-shadow: none; }
+/* Force text input to match button size and style */
+.stTextInput > div > div > div {
+    background-color: white !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 12px !important;
+    height: 48px !important;
+    display: flex;
+    align-items: center;
+}
+.stTextInput input {
+    height: 48px !important;
+    padding-left: 15px !important;
+}
+.suggestion-chip { display: inline-block; background: rgba(167, 139, 250, 0.1); color: #6D28D9; padding: 6px 14px; border-radius: 999px; font-size: 0.82rem; font-weight: 600; cursor: pointer; margin: 4px; transition: all 0.2s ease; border: 1px solid rgba(167, 139, 250, 0.2); }
+.suggestion-chip:hover { background: #A78BFA; color: white; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(167, 139, 250, 0.2); }
+.ai-response-card { background: white; border-radius: 20px; padding: 1.8rem; margin-bottom: 2rem; border-left: 5px solid var(--dz-primary); box-shadow: 0 10px 30px rgba(0,0,0,0.03); transition: transform 0.3s ease; border: 1px solid #F1F5F9; }
+.ai-response-card:hover { transform: translateY(-5px); box-shadow: 0 15px 45px rgba(0,0,0,0.06); }
+.ai-card-section { margin-bottom: 1.5rem; }
+.ai-section-title { font-size: 1.05rem; font-weight: 700; color: #334155; display: flex; align-items: center; gap: 8px; margin-bottom: 0.8rem; }
+.ai-card-div { height: 1px; background: #F1F5F9; margin: 1.2rem 0; }
+.typing-anim { font-style: italic; color: #94A3B8; font-size: 0.85rem; margin-top: 5px; }
+.ai-empty-state { text-align: center; padding: 4rem 2rem; color: #94A3B8; }
+.ai-empty-icon { font-size: 3.5rem; margin-bottom: 1rem; opacity: 0.4; }
+
+/* Minimalist Clear Button */
+.clear-btn-container { display: flex; justify-content: flex-end; margin-bottom: -32px; z-index: 10; position: relative; }
+.stButton > button.clear-btn {
+    background: transparent !important; color: #94A3B8 !important; border: none !important;
+    font-size: 1.2rem !important; font-weight: 700 !important; width: auto !important; padding: 0 !important;
+    box-shadow: none !important; cursor: pointer; transition: color 0.2s ease !important;
+}
+.stButton > button.clear-btn:hover { color: #F87171 !important; background: transparent !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -324,7 +364,7 @@ hr { border-color: var(--dz-border) !important; }
 # SESSION STATE
 # ─────────────────────────────────────────────
 for key, default_val in [
-    ("analyzed", False), ("results", None), ("metrics", None), ("ai_recs", None), ("chat_history", []), ("scroll_to_top", False), ("reminders", [])
+    ("analyzed", False), ("results", None), ("metrics", None), ("ai_recs", None), ("chat_history", []), ("scroll_to_top", False), ("reminders", []), ("pending_prompt", None)
 ]:
     if key not in st.session_state:
         st.session_state[key] = default_val
@@ -730,15 +770,24 @@ if tab2 is not None:
                 </div>""", unsafe_allow_html=True)
 
                 st.markdown("**Risk Assessment**")
-                for risk_name, risk_val, risk_color in [
-                    ("Cardiovascular", bio["cardio_risk"], "#F87171"),
-                    ("Metabolic", bio["metabolic_risk"], "#FBBF24"),
-                    ("Cognitive Decline", bio["cognitive_risk"], "#A78BFA"),
+                for risk_name, risk_val in [
+                    ("Cardiovascular",  bio["cardio_risk"]),
+                    ("Metabolic",       bio["metabolic_risk"]),
+                    ("Cognitive Decline", bio["cognitive_risk"]),
                 ]:
-                    
-                    # Badge logic
-                    badge_class = "badge-low" if risk_val <= 25 else "badge-moderate" if risk_val <= 50 else "badge-high"
-                    badge_text = "Low" if risk_val <= 25 else "Moderate" if risk_val <= 50 else "High"
+                    # Dynamic color based on risk level
+                    if risk_val <= 25:
+                        risk_color = "#10B981" # Green
+                        badge_class = "badge-low"
+                        badge_text = "Low"
+                    elif risk_val <= 50:
+                        risk_color = "#F59E0B" # Amber/Orange
+                        badge_class = "badge-moderate"
+                        badge_text = "Moderate"
+                    else:
+                        risk_color = "#EF4444" # Red
+                        badge_class = "badge-high"
+                        badge_text = "High"
 
                     st.markdown(f"""
                     <div class="vs-risk-row">
@@ -902,6 +951,19 @@ if tab2 is not None:
                             </div>
                         </div>
                         """, unsafe_allow_html=True)
+                        
+                        with st.expander(f"🔬 Discover Why (+{impact_yrs} yrs)", expanded=False):
+                            with st.spinner("Scraping live medical research (PubMed)..."):
+                                expl = get_explanations(st.session_state.metrics, k, impact_yrs)
+                                
+                            st.write(f"**Personal Impact:** {expl['why_this_score']}")
+                            st.write(f"**The Science:** {expl['scientific_explanation']}")
+                            
+                            st.markdown("##### 📝 Verified Research (Live Web Scraped)")
+                            for ref in expl.get("references", []):
+                                st.info(f"**{ref['title']}**\n\n📌 *{ref['evidence']}*\n\n[📄 Free Access on {ref['source']}]({ref['link']})")
+                                
+                            st.caption("⚠️ *This is educational information sourced directly from medical databases, not medical advice.*")
                 
                 # Share Badge
                 percentile = bio.get('percentile', 63) if isinstance(bio.get('percentile', None), (int, float)) else 63
@@ -956,11 +1018,15 @@ if tab3 is not None:
 
 
 
-            sim_proj = project_health_trajectory({**metrics, "sleep_hours": sim_sleep, "steps_per_day": sim_steps,
-                                                 "stress_level": sim_stress, "diet_quality": sim_diet,
-                                                 "exercise_min_week": sim_exercise})
+            sim_metrics = {
+                "sleep_hours": sim_sleep, "steps_per_day": sim_steps,
+                "stress_level": sim_stress, "diet_quality": sim_diet,
+                "exercise_min_week": sim_exercise
+            }
+            sim_proj = project_health_trajectory({**metrics, **sim_metrics})
 
-
+            years_saved = round(proj["current_bio_ages"][-1] - sim_proj["optimized_bio_ages"][-1], 1)
+            val_engine = explain_projection(metrics, sim_metrics, proj["current_bio_ages"][-1], sim_proj["optimized_bio_ages"][-1])
 
             st.markdown("<br>", unsafe_allow_html=True)
             st.markdown("### 🔮 Your 10-Year Outcome Dashboard")
@@ -974,6 +1040,14 @@ if tab3 is not None:
                   <div class="vs-metric-val" style="color:#F87171; font-size:2.8rem; line-height:1;">{proj["current_bio_ages"][-1]}</div>
                   <div class="vs-metric-unit" style="margin-top:12px; color:#64748B;">biological years old</div>
                 </div>""", unsafe_allow_html=True)
+                with st.expander("👉 Why this happens"):
+                    v = val_engine["current_path"]
+                    st.write(f"**Explanation:** {v['explanation']}")
+                    st.write(f"**Reasoning:** {v['reasoning']}")
+                    st.write(f"**Scientific Proof:** {v['scientific_basis']}")
+                    for ref in v.get("references", []):
+                        st.info(f"📄 [{ref['title']}]({ref['link']})")
+
             with m2:    
                 st.markdown(f"""
                 <div class="vs-metric" style="background:rgba(16,185,129,0.03); border:1px solid rgba(16,185,129,0.15); height:100%; border-radius:12px; padding:18px;">
@@ -981,16 +1055,30 @@ if tab3 is not None:
                   <div class="vs-metric-val" style="color:#10B981; font-size:2.8rem; line-height:1;">{sim_proj["optimized_bio_ages"][-1]}</div>
                   <div class="vs-metric-unit" style="margin-top:12px; color:#64748B;">biological years old</div>
                 </div>""", unsafe_allow_html=True)
+                with st.expander("👉 What improved"):
+                    v = val_engine["simulated_path"]
+                    st.write(f"**Explanation:** {v['explanation']}")
+                    st.write(f"**Reasoning:** {v['reasoning']}")
+                    st.write(f"**Scientific Proof:** {v['scientific_basis']}")
+                    for ref in v.get("references", []):
+                        st.info(f"📄 [{ref['title']}]({ref['link']})")
+
             with m3:
-                years_saved = round(proj["current_bio_ages"][-1] - sim_proj["optimized_bio_ages"][-1], 1)
                 st.markdown(f"""
                 <div class="vs-metric" style="background:rgba(251,191,36,0.06); border:2px solid rgba(251,191,36,0.35); height:100%; border-radius:12px; padding:18px; box-shadow: 0 4px 12px rgba(251,191,36,0.1);">
                   <div class="vs-metric-label" style="font-size:0.95rem; font-weight:800; color:#B45309; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">Total Time Saved</div>
                   <div class="vs-metric-val" style="color:#D97706; font-size:3.2rem; line-height:1;">{years_saved}</div>
                   <div class="vs-metric-unit" style="font-weight:700; color:#B45309; margin-top:12px;">years younger</div>
                 </div>""", unsafe_allow_html=True)
+                with st.expander("👉 How you gained years"):
+                    v = val_engine["time_saved"]
+                    st.write(f"**Explanation:** {v['explanation']}")
+                    st.write(f"**Reasoning:** {v['reasoning']}")
+                    st.write(f"**Scientific Proof:** {v['scientific_basis']}")
+                    for ref in v.get("references", []):
+                        st.info(f"📄 [{ref['title']}]({ref['link']})")
                 
-            st.markdown("<br><p style='font-size:0.85rem;color:#94A3B8;margin-top:12px; text-align:center;'>Projections are based on epidemiological models from the Framingham Heart Study and UK Biobank data.</p>", unsafe_allow_html=True)
+            st.markdown("<br><p style='font-size:0.85rem;color:#94A3B8;margin-top:12px; text-align:center;'>⚠️ This projection is based on statistical epidemiology models from the Framingham Heart Study. It is educational information, not medical advice.</p>", unsafe_allow_html=True)
 
 # ═══════════════════════════════════
 # TAB 4 — ACTION PLAN
@@ -1337,29 +1425,75 @@ with tab5:
     else:
         if "chat_history" not in st.session_state:
             st.session_state.chat_history = []
-        if "past_sessions" not in st.session_state:
-            st.session_state.past_sessions = []
-
-        st.info("InsightCare AI provides health insights, not medical diagnoses. Always consult a doctor for clinical decisions.")
-
+       
         metrics = st.session_state.get("metrics", {})
-        bio = st.session_state.get("results", {}).get("bio", {})
+        # Chat Logic Callbacks
+        def submit_chat_callback():
+            prompt = st.session_state.chat_input_dynamic.strip()
+            if prompt:
+                st.session_state.pending_prompt = prompt
+                st.session_state.chat_input_dynamic = ""
 
-        # User manually types questions in the chat input; preset chips are hidden per user request.
-        col_main, col_side = st.columns([3, 1])
+        # Split Layout (Approx 35 / 65)
+        col_left, col_right = st.columns([1, 1.8], gap="large")
 
-        with col_side:
-            pass
+        with col_left:
+            st.markdown('<div class="ai-panel-left">', unsafe_allow_html=True)
+            st.markdown('<div class="vs-label">PERSONAL HEALTH BOT</div>', unsafe_allow_html=True)
+            st.markdown("### How can I help today?")
+            st.markdown("<p style='color:#64748B; font-size:0.9rem;'>Ask your assistant about your longevity trends, biological markers, or habits.</p>", unsafe_allow_html=True)
 
-        def send_chat():
-            prompt = st.session_state.get("chat_input", "").strip()
-            if not prompt:
-                return
+            # Clean Input area (at top, no buttons)
+            st.markdown('<div class="ai-input-card" style="margin-top:20px;">', unsafe_allow_html=True)
+            st.text_input("Message InsightCare AI", key="chat_input_dynamic", placeholder="Ask me anything", label_visibility="collapsed", on_change=submit_chat_callback)
+            st.markdown('</div>', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
 
+        with col_right:
+            if st.session_state.chat_history:
+                st.markdown('<div class="clear-btn-container">', unsafe_allow_html=True)
+                if st.button("✕", key="btn_clear_chat", help="Clear Chat History", type="secondary"):
+                    st.session_state.chat_history = []
+                    st.rerun()
+                st.markdown('</div>', unsafe_allow_html=True)
+
+            if not st.session_state.chat_history:
+                st.markdown("""
+                <div class="ai-empty-state">
+                    <div class="ai-empty-icon">🤖</div>
+                    <h3>Start by asking a health question...</h3>
+                    <p>Try "What is my biggest health risk?" or "How can I lower my biological age?"</p>
+                </div>
+                """, unsafe_allow_html=True)
+            else:
+                for idx, msg in enumerate(st.session_state.chat_history):
+                    if msg["role"] == "user":
+                        st.markdown(f"""<div style="display:flex; justify-content:flex-end; margin-bottom:1rem;"><div class="chat-bubble user" style="max-width:85%;">{msg['content']}</div></div>""", unsafe_allow_html=True)
+                    else:
+                        # Assistants content is structured into a modern card
+                        text_content = msg["content"]
+                        
+                        # Use a single unindented HTML block to prevent code-block bug
+                        st.markdown(f"""
+<div class="ai-response-card" style="position:relative;">
+<div class="ai-card-section">
+<div class="ai-section-title" style="color:var(--dz-primary);">🤖 INSIGHTCARE AI ANALYSIS</div>
+<div style="color:#475569; line-height:1.7; font-size:0.95rem; margin-top:1rem;">
+{text_content}
+</div>
+</div>
+<div class="ai-card-div"></div>
+<div style="font-size:0.75rem; color:#94A3B8; text-align:right;">✓ Personalized medical insight based on your vitals</div>
+</div>
+""", unsafe_allow_html=True)
+
+        # Chat Logic Processing
+        if st.session_state.pending_prompt:
+            prompt = st.session_state.pending_prompt
+            st.session_state.pending_prompt = None # Reset
+            
             st.session_state.chat_history.append({"role": "user", "content": prompt})
-            with st.spinner("Thinking..."):
-                import time
-                time.sleep(0.3)
+            with st.spinner("AI is analyzing your timeline..."):
                 from chat_engine import generate_chat_response
                 ctx = {
                     "age": metrics.get("age"),
@@ -1372,27 +1506,15 @@ with tab5:
                     "sleep": metrics.get("sleep_hours", 6)
                 }
                 response = generate_chat_response(st.session_state.chat_history, ctx)
+                st.session_state.chat_history.append({"role": "assistant", "content": response})
+            st.rerun()
 
-            st.session_state.chat_history.append({"role": "assistant", "content": response})
-            st.session_state.past_sessions.append({"datetime": datetime.now().strftime("%Y-%m-%d %H:%M"), "summary": prompt})
-            if len(st.session_state.past_sessions) > 10:
-                st.session_state.past_sessions = st.session_state.past_sessions[-10:]
-            st.session_state.chat_input = ""
-
-        with col_main:
-            # Render existing history with user on right, assistant on left
-            for msg in st.session_state.chat_history:
-                if msg["role"] == "user":
-                    _, right = st.columns([2, 1])
-                    with right:
-                        st.markdown(f"<div class='chat-bubble user'>{msg['content']}</div>", unsafe_allow_html=True)
-                else:
-                    left, _ = st.columns([1, 2])
-                    with left:
-                        st.markdown(f"<div class='chat-bubble assistant'>{msg['content']}</div>", unsafe_allow_html=True)
-
-            st.markdown("---")
-            if "chat_input" not in st.session_state:
-                st.session_state.chat_input = ""
-
-            st.text_input("Ask me about your health timeline or reports...", key="chat_input", on_change=send_chat)
+        # Smooth Auto-Scroll to bottom JS
+        components.html("""
+        <script>
+        const chatPanel = window.parent.document.querySelector('section.main');
+        if (chatPanel) {
+            chatPanel.scrollTo({ top: chatPanel.scrollHeight, behavior: 'smooth' });
+        }
+        </script>
+        """, height=0)
