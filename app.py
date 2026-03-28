@@ -366,20 +366,23 @@ if "age_val" not in st.session_state:
     st.session_state["stress_val"] = 5
     st.session_state["diet_val"] = 5
 
-if st.session_state.scroll_to_top:
-    components.html("""
-        <script>
+# Stable navigation script to prevent tab reset on rerun
+scroll_script = f"""
+    <script>
+        if ({str(st.session_state.scroll_to_top).lower()}) {{
             const main = window.parent.document.querySelector('.main');
             if (main) main.scrollTo(0,0);
-            setTimeout(() => {
+            setTimeout(() => {{
                 const tabs = window.parent.document.querySelectorAll('[data-baseweb="tab"]');
-                if (tabs.length > 1) {
+                if (tabs.length > 1) {{
                     tabs[1].click();
-                }
-            }, 500);
-        </script>
-    """, height=0)
-    st.session_state.scroll_to_top = False
+                }}
+            }}, 500);
+        }}
+    </script>
+"""
+components.html(scroll_script, height=0)
+st.session_state.scroll_to_top = False
 
 # ─────────────────────────────────────────────
 # HEADER  (with real generated logo)
@@ -488,18 +491,13 @@ def render_slider_feedback(value, min_val, max_val, status_label, status_color, 
 # ─────────────────────────────────────────────
 # TABS
 # ─────────────────────────────────────────────
-if not st.session_state.analyzed:
-    tabs = st.tabs(["🧬 Health Input"])
-    tab1 = tabs[0]
-    tab2 = tab3 = tab4 = tab5 = None
-else:
-    tab1, tab2, tab3, tab4, tab5 = st.tabs([
-        "🧬 Health Input",
-        "🔬 Biological Age",
-        "📈 Future Projection",
-        "🎯 Action Plan",
-        "💬 AI Assistant",
-    ])
+tab1, tab2, tab3, tab4, tab5 = st.tabs([
+    "🧬 Health Input",
+    "🔬 Biological Age",
+    "📈 Future Projection",
+    "🎯 Action Plan",
+    "💬 AI Assistant",
+])
 
 # ═══════════════════════════════════
 # TAB 1 — HEALTH INPUT
@@ -520,7 +518,12 @@ with tab1:
         </div>
         <div class="vs-divider"></div>""", unsafe_allow_html=True)
 
-        name   = st.text_input("Full Name", value=st.session_state.get("name","Enter your name"), placeholder="Enter your name", help="Your name will be used in the generated report.")
+        name = st.text_input(
+            "Full Name",
+            value=st.session_state.get("name", ""),
+            placeholder="Enter your name",
+            help="Your name will be used in the generated report."
+        )
         st.session_state["name"] = name
 
         age    = st.number_input("Age (years)",    18, 100,  st.session_state["age_val"], help="Age is a primary factor in biological aging.", key="age_widget")
@@ -728,20 +731,59 @@ if tab2 is not None:
 
                 st.markdown("**Risk Assessment**")
                 for risk_name, risk_val, risk_color in [
-                    ("Cardiovascular",  bio["cardio_risk"],    "#F87171"),
-                    ("Metabolic",       bio["metabolic_risk"], "#FBBF24"),
+                    ("Cardiovascular", bio["cardio_risk"], "#F87171"),
+                    ("Metabolic", bio["metabolic_risk"], "#FBBF24"),
                     ("Cognitive Decline", bio["cognitive_risk"], "#A78BFA"),
                 ]:
+                    
+                    # Badge logic
                     badge_class = "badge-low" if risk_val <= 25 else "badge-moderate" if risk_val <= 50 else "badge-high"
                     badge_text = "Low" if risk_val <= 25 else "Moderate" if risk_val <= 50 else "High"
+
                     st.markdown(f"""
                     <div class="vs-risk-row">
-                      <div class="vs-risk-label">{risk_name} <span class="risk-badge {badge_class}">{badge_text}</span></div>
-                      <div class="vs-risk-bg">
-                        <div class="vs-risk-fill" style="width:{risk_val}%;background:{risk_color};"></div>
-                      </div>
-                      <div class="vs-risk-score" style="color:{risk_color};">{risk_val}</div>
-                    </div>""", unsafe_allow_html=True)
+                    
+                    <div class="vs-risk-label">
+                        {risk_name} 
+                        <span class="risk-badge {badge_class}">{badge_text}</span>
+                    </div>
+
+                   
+                    <div class="vs-risk-bg" style="position:relative; height:10px; border-radius:8px; overflow:hidden;">
+    
+                        <!-- Range Zones -->
+                        <div style="position:absolute; left:0; width:25%; height:100%; background:#BBF7D0;"></div>
+                        <div style="position:absolute; left:25%; width:25%; height:100%; background:#FEF08A;"></div>
+                        <div style="position:absolute; left:50%; width:50%; height:100%; background:#FECACA;"></div>
+
+                        <!-- ✅ SINGLE FILL -->
+                        <div style="
+                            width:{risk_val}%;
+                            height:100%;
+                            background:{risk_color};
+                            border-radius:8px;
+                            position:relative;
+                            z-index:2;">
+                        </div>
+
+                        <!-- OPTIONAL MARKER -->
+                        <div style="
+                            position:absolute;
+                            left:{risk_val}%;
+                            top:-3px;
+                            width:2px;
+                            height:14px;
+                            background:#000;">
+                        </div>
+
+                    </div>
+
+                    <div class="vs-risk-score" style="color:{risk_color};">
+                        {risk_val}
+                    </div>
+
+                    </div>
+                    """, unsafe_allow_html=True)
                 
                 st.markdown("""
                 <div class="risk-legend">
@@ -1106,7 +1148,7 @@ if tab4 is not None:
 
                 pdf_bytes = bytes(create_pdf_report(st.session_state.metrics, st.session_state.results))
                 st.download_button(
-                    label="📄 Export My Longevity Report",
+                    label="📄 Export My Health Report",
                     key="export_longevity_report",
                     data=pdf_bytes,
                     file_name=f"InsightCare_Report_{datetime.now().strftime('%Y%m%d')}.pdf",
@@ -1285,8 +1327,14 @@ if tab4 is not None:
 # ═══════════════════════════════════
 # TAB 5 — AI ASSISTANT
 # ═══════════════════════════════════
-if tab5 is not None:
-    with tab5:
+with tab5:
+    if not st.session_state.analyzed:
+        st.markdown("""
+        <div class="vs-empty">
+          <div class="vs-empty-icon">💬</div>
+          <div class="vs-empty-text">Complete Step 1 to chat with the AI Assistant</div>
+        </div>""", unsafe_allow_html=True)
+    else:
         if "chat_history" not in st.session_state:
             st.session_state.chat_history = []
         if "past_sessions" not in st.session_state:
