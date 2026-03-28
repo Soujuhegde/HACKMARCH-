@@ -153,17 +153,63 @@ h1, h2, h3, h4, h5, h6 {
 }
 .stTabs [data-baseweb="tab-panel"] { padding-top: 2rem !important; }
 
-.stNumberInput > div > div > input, .stSelectbox > div > div > div {
-    background: rgba(255, 255, 255, 0.7) !important;
-    border: 1px solid rgba(255, 255, 255, 0.9) !important;
-    border-radius: 999px !important; color: var(--dz-text) !important;
-    padding: 0.8rem 1.2rem !important; transition: all 0.3s ease !important;
-    font-weight: 500 !important; box-shadow: inset 0 2px 5px rgba(0,0,0,0.02) !important;
+.stNumberInput > div > div > div, .stTextInput > div > div > div, .stSelectbox > div > div > div {
+    background-color: #FFFFFF !important;
+    background-image: none !important;
+    border: 1px solid var(--dz-border) !important;
+    border-radius: 14px !important;
 }
-.stNumberInput > div > div > input:focus, .stSelectbox > div > div > div:focus-within {
-    box-shadow: var(--dz-glow) !important; border-color: var(--dz-primary) !important; background: #FFFFFF !important;
+
+/* Ensure the input text area itself is white and not dark */
+.stNumberInput input, .stTextInput input {
+    background-color: #FFFFFF !important;
+    background-image: none !important;
+    color: var(--dz-text) !important;
+    border: none !important;
+    font-size: 1rem !important;
+    height: 48px !important;
 }
-label[data-testid="stWidgetLabel"] { color: var(--dz-text) !important; font-weight: 600 !important; padding-bottom: 0.4rem !important; font-size: 0.9rem !important; }
+
+/* Fix the number input inner area that often stays dark */
+div[data-baseweb="input"] {
+    background-color: #FFFFFF !important;
+    background-image: none !important;
+    border-radius: 14px !important;
+}
+
+/* Buttons Styling for st.number_input - Clearer and functional */
+.stNumberInput button {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background-color: #F8FAFC !important; /* Slightly distinct from input bg */
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 10px !important;
+    width: 36px !important;
+    height: 36px !important;
+    margin: 6px !important;
+    color: #1E293B !important;
+    transition: all 0.2s ease !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+}
+.stNumberInput button:hover {
+    background-color: #F1F5F9 !important;
+    border-color: var(--dz-primary) !important;
+    color: var(--dz-primary) !important;
+    transform: translateY(-1px);
+}
+.stNumberInput button:active {
+    transform: translateY(0);
+}
+
+.stNumberInput div:focus-within, .stTextInput div:focus-within {
+    border-color: var(--dz-primary) !important;
+    box-shadow: 0 0 0 3px rgba(6, 59, 150, 0.1) !important;
+}
+label[data-testid="stWidgetLabel"] { color: var(--dz-text) !important; font-weight: 700 !important; padding-bottom: 0.4rem !important; font-size: 0.95rem !important; }
+
+/* Reduced vertical spacing for compactness */
+.stVerticalBlock { gap: 1.2rem !important; }
 
 .stSlider [data-baseweb="slider"] div[role="slider"] {
     background: var(--dz-primary-grad) !important; border: 3px solid #FFFFFF !important;
@@ -172,17 +218,41 @@ label[data-testid="stWidgetLabel"] { color: var(--dz-text) !important; font-weig
 .stSlider [data-baseweb="slider"] [data-testid="stSliderTrackActive"] { background: var(--dz-primary-grad) !important; }
 .stSlider > div { color: var(--dz-text) !important; }
 
-.stCheckbox > label { font-weight: 500 !important; color: var(--dz-text) !important; }
-.stCheckbox [data-baseweb="checkbox"] > div:first-child { background: var(--dz-primary) !important; border-color: var(--dz-primary) !important; border-radius: 8px !important; }
+/* Custom Checkbox Redesign */
+.stCheckbox > label { font-weight: 500 !important; color: var(--dz-text) !important; gap: 10px !important; }
+.stCheckbox div[data-baseweb="checkbox"] > div {
+    background-color: transparent !important;
+    border: 2px solid var(--dz-primary) !important;
+    border-radius: 6px !important;
+    width: 22px !important;
+    height: 22px !important;
+    transition: all 0.2s ease !important;
+}
+.stCheckbox [aria-checked="true"] div[data-baseweb="checkbox"] > div {
+    background-color: var(--dz-primary) !important;
+}
+.stCheckbox svg {
+    fill: white !important;
+}
 
 .stButton > button {
     background: var(--dz-primary-grad) !important; color: white !important;
-    border: none !important; border-radius: 999px !important;
-    padding: 0.9rem 2.5rem !important; font-weight: 700 !important; font-size: 1.05rem !important;
-    letter-spacing: 0.02em !important; box-shadow: 0 4px 12px rgba(6, 59, 150, 0.2) !important;
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important; width: 100% !important;
+    border: none !important; border-radius: 12px !important;
+    padding: 0.75rem 2rem !important; font-weight: 600 !important; font-size: 1rem !important;
+    letter-spacing: 0.01em !important; box-shadow: 0 2px 8px rgba(6, 59, 150, 0.15) !important;
+    transition: all 0.2s ease !important; width: 100% !important;
 }
-.stButton > button:hover { transform: translateY(-3px) scale(1.01) !important; box-shadow: 0 6px 16px rgba(6, 59, 150, 0.3) !important; }
+.stButton > button:hover { opacity: 0.9 !important; box-shadow: 0 4px 12px rgba(6, 59, 150, 0.2) !important; }
+
+.vs-card-header { display: flex !important; align-items: center !important; gap: 12px !important; margin-bottom: 1.5rem !important; }
+.vs-card-title { font-size: 0.9rem !important; font-weight: 700 !important; letter-spacing: 0.08em !important; text-transform: uppercase !important; color: var(--dz-text-light) !important; }
+.vs-divider { height: 1px !important; background: var(--dz-border) !important; margin: 0 0 1.5rem !important; }
+
+.vs-icon-wrap {
+    width: 40px !important; height: 40px !important; border-radius: 12px !important;
+    display: flex !important; align-items: center !important; justify-content: center !important;
+    font-size: 1.25rem !important; flex-shrink: 0 !important;
+}
 
 .vs-rec-rank {
     position: absolute; top: -12px; left: 1.5rem;
@@ -362,17 +432,10 @@ if not st.session_state.get('seen_onboarding', False):
         <li><strong>Simulate</strong> future outcomes with habit changes.</li>
         <li><strong>Act</strong> on personalized recommendations.</li>
       </ol>
-      <button id="start-journey" style="border:none;background:#4338CA;color:white;padding:10px 16px;border-radius:10px;cursor:pointer;">Start your health journey</button>
     </div>
-    <script>
-      document.getElementById('start-journey').onclick = function() {
-        window.location.hash = 'start';
-        fetch(window.location.href, {method: 'GET'}).then(()=>window.location.reload());
-      };
-    </script>
     ''', unsafe_allow_html=True)
-    if st.button("I've read this, take me in", key="onboarding_done"):
-        st.session_state['seen_onboarding'] = True
+    st.session_state['seen_onboarding'] = True
+    st.rerun()
 
 # ─────────────────────────────────────────────
 # LOADING MICRO-ANIMATION
@@ -433,23 +496,10 @@ else:
 # TAB 1 — HEALTH INPUT
 # ═══════════════════════════════════
 with tab1:
-    st.markdown('''
-    <div class="step-indicator">
-        <div class="step-dot"></div>
-        <div class="step-label">Step 1 of 1 — Data Collection</div>
-    </div>
-    ''', unsafe_allow_html=True)
-    st.progress(1.0)
+    st.markdown("<br>", unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
     st.markdown('<div class="vs-title">Enter Your Health Data</div>', unsafe_allow_html=True)
     st.markdown('<div class="trust-intro">Your data never leaves your device. Used only to calculate your biological age and health projections.</div>', unsafe_allow_html=True)
-
-    col_import_1, col_import_2 = st.columns([1, 1])
-    with col_import_1:
-         if st.button("🚀 Load Sample Profile (Riya, 32)", type="secondary", use_container_width=True):
-             load_sample()
-    with col_import_2:
-         st.button("📲 Import from Wearables", help="Connect Google Fit or Apple Health (Simulated)", use_container_width=True)
 
     col1, col2, col3 = st.columns(3, gap="medium")
 
@@ -457,13 +507,15 @@ with tab1:
     with col1:
         st.markdown("""
         <div class="vs-card-header">
-          <div class="vs-icon-wrap icon-lilac">👤</div>
           <span class="vs-card-title">Personal Info</span>
         </div>
         <div class="vs-divider"></div>""", unsafe_allow_html=True)
 
-        age    = st.number_input("Age (years)",    18, 100,  st.session_state["age_val"], help="Age is a primary factor in biological aging and disease risk.", key="age_widget")
-        weight = st.number_input("Weight (kg)",    30.0, 200.0, st.session_state["weight_val"], help="Body mass index (BMI) is calculated from weight and height, affecting metabolic health.", key="weight_widget")
+        name   = st.text_input("Full Name", value=st.session_state.get("name","Enter your name"), placeholder="Enter your name", help="Your name will be used in the generated report.")
+        st.session_state["name"] = name
+
+        age    = st.number_input("Age (years)",    18, 100,  st.session_state["age_val"], help="Age is a primary factor in biological aging.", key="age_widget")
+        weight = st.number_input("Weight (kg)",    30.0, 200.0, st.session_state["weight_val"], format="%.1f", help="Body mass index (BMI) is calculated from weight and height.", key="weight_widget")
         height = st.number_input("Height (cm)",    120, 220,  st.session_state["height_val"], help="Used to assess body composition and BMI.", key="height_widget")
         smoker = st.checkbox("Smoker 🚬",          value=st.session_state["smoker_val"], help="Smoking significantly accelerates biological aging and increases cardiovascular risk.", key="smoker_widget")
         packs  = st.slider("Packs per day", 0.0, 3.0, 0.0, 0.5) if smoker else 0.0
@@ -597,7 +649,7 @@ with tab1:
     st.markdown("<br>", unsafe_allow_html=True)
     _, col_btn, _ = st.columns([1, 2, 1])
     with col_btn:
-        analyze = st.button("🧬  Calculate My Biological Age →", use_container_width=True)
+        analyze = st.button("🧬  Calculate My Biological Age →", type="primary", use_container_width=True)
 
     if analyze:
         metrics = {
@@ -1040,7 +1092,7 @@ if tab4 is not None:
             st.markdown("<br>", unsafe_allow_html=True)
             _, col_re, _ = st.columns([1, 2, 1])
             with col_re:
-                if st.button("🔄 Re-analyse with New Data", key="reanalyse_new_data", use_container_width=True):
+                if st.button("🔄 Re-analyse with New Data", key="reanalyse_new_data", type="primary", use_container_width=True):
                     st.session_state.analyzed = False
 
                 pdf_bytes = bytes(create_pdf_report(st.session_state.metrics, st.session_state.results))
@@ -1050,6 +1102,7 @@ if tab4 is not None:
                     data=pdf_bytes,
                     file_name=f"InsightCare_Report_{datetime.now().strftime('%Y%m%d')}.pdf",
                     mime="application/pdf",
+                    type="primary",
                     use_container_width=True
                 )
 
