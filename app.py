@@ -169,6 +169,7 @@ h1, h2, h3, h4, h5, h6 {
     font-size: 1rem !important;
     height: 48px !important;
 }
+}
 
 /* Fix the number input inner area that often stays dark */
 div[data-baseweb="input"] {
@@ -1105,6 +1106,7 @@ if tab4 is not None:
                     type="primary",
                     use_container_width=True
                 )
+
 
 
 # ═══════════════════════════════════
