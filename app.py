@@ -19,6 +19,7 @@ from report_generator import create_pdf_report
 from reminder_system import generate_reminders_from_recs
 from explanation_engine import get_explanations
 from projection_explainer import explain_projection
+from validation_engine import validate_metrics
 import uuid
 
 # ─────────────────────────────────────────────
@@ -364,7 +365,7 @@ hr { border-color: var(--dz-border) !important; }
 # SESSION STATE
 # ─────────────────────────────────────────────
 for key, default_val in [
-    ("analyzed", False), ("results", None), ("metrics", None), ("ai_recs", None), ("chat_history", []), ("scroll_to_top", False), ("reminders", []), ("pending_prompt", None)
+    ("analyzed", False), ("results", None), ("metrics", None), ("ai_recs", None), ("chat_history", []), ("scroll_to_top", False), ("reminders", []), ("pending_prompt", None), ("warnings", []), ("confidence", 100)
 ]:
     if key not in st.session_state:
         st.session_state[key] = default_val
@@ -712,6 +713,15 @@ with tab1:
             "stress_level": stress, "exercise_min_week": exercise,
             "diet_quality": diet, "alcohol_units_week": alcohol,
         }
+        with st.spinner("💗 Validating health metrics…"):
+            errors, warnings, confidence = validate_metrics(metrics)
+            if errors:
+                for err in errors:
+                    st.error(err)
+                st.stop()
+            st.session_state.warnings = warnings
+            st.session_state.confidence = confidence
+
         with st.spinner("💗 Calculating your health profile…"):
             bio_result = calculate_biological_age(metrics)
             projection = project_health_trajectory(metrics)
@@ -748,6 +758,21 @@ if tab2 is not None:
             st.markdown('<div class="vs-label">THE MIRROR</div>', unsafe_allow_html=True)
             st.markdown('<div class="vs-title">Your Biological Age</div>', unsafe_allow_html=True)
 
+            # Confidence Score Badge
+            c_score = st.session_state.get("confidence", 100)
+            c_color = "#10B981" if c_score >= 90 else "#FBBF24" if c_score >= 75 else "#F87171"
+            st.markdown(f"""
+            <div style="background:rgba(42, 82, 152, 0.05); padding:10px 15px; border-radius:12px; border-left:4px solid {c_color}; margin-bottom:1.5rem;">
+                <span style="font-size:0.85rem; font-weight:700; color:#334155;">PREDICTION CONFIDENCE: </span>
+                <span style="font-size:1.1rem; font-weight:800; color:{c_color};">{c_score}%</span>
+                <div style="font-size:0.75rem; color:#64748B; margin-top:4px;">Based on data quality, clinical range, and cross-metric consistency.</div>
+            </div>
+            """, unsafe_allow_html=True)
+
+            # Clinical Warnings
+            for warn in st.session_state.get("warnings", []):
+                st.warning(warn)
+
             col_left, col_right = st.columns([1, 1.8], gap="large")
 
             with col_left:
@@ -775,64 +800,40 @@ if tab2 is not None:
                     ("Metabolic",       bio["metabolic_risk"]),
                     ("Cognitive Decline", bio["cognitive_risk"]),
                 ]:
-                    # Dynamic color based on risk level
                     if risk_val <= 25:
-                        risk_color = "#10B981" # Green
+                        risk_color = "#10B981"
                         badge_class = "badge-low"
                         badge_text = "Low"
                     elif risk_val <= 50:
-                        risk_color = "#F59E0B" # Amber/Orange
+                        risk_color = "#F59E0B"
                         badge_class = "badge-moderate"
                         badge_text = "Moderate"
                     else:
-                        risk_color = "#EF4444" # Red
+                        risk_color = "#EF4444"
                         badge_class = "badge-high"
                         badge_text = "High"
 
                     st.markdown(f"""
-                    <div class="vs-risk-row">
-                    
-                    <div class="vs-risk-label">
-                        {risk_name} 
-                        <span class="risk-badge {badge_class}">{badge_text}</span>
-                    </div>
-
-                   
-                    <div class="vs-risk-bg" style="position:relative; height:10px; border-radius:8px; overflow:hidden;">
-    
-                        <!-- Range Zones -->
-                        <div style="position:absolute; left:0; width:25%; height:100%; background:#BBF7D0;"></div>
-                        <div style="position:absolute; left:25%; width:25%; height:100%; background:#FEF08A;"></div>
-                        <div style="position:absolute; left:50%; width:50%; height:100%; background:#FECACA;"></div>
-
-                        <!-- ✅ SINGLE FILL -->
-                        <div style="
-                            width:{risk_val}%;
-                            height:100%;
-                            background:{risk_color};
-                            border-radius:8px;
-                            position:relative;
-                            z-index:2;">
-                        </div>
-
-                        <!-- OPTIONAL MARKER -->
-                        <div style="
-                            position:absolute;
-                            left:{risk_val}%;
-                            top:-3px;
-                            width:2px;
-                            height:14px;
-                            background:#000;">
-                        </div>
-
-                    </div>
-
-                    <div class="vs-risk-score" style="color:{risk_color};">
-                        {risk_val}
-                    </div>
-
-                    </div>
-                    """, unsafe_allow_html=True)
+<div class="vs-risk-row">
+<div class="vs-risk-label">
+{risk_name} 
+<span class="risk-badge {badge_class}">{badge_text}</span>
+</div>
+<div class="vs-risk-bg" style="position:relative; height:10px; border-radius:8px; overflow:hidden; margin: 10px 0;">
+<!-- Range Zones -->
+<div style="position:absolute; left:0; width:25%; height:100%; background:#BBF7D0;"></div>
+<div style="position:absolute; left:25%; width:25%; height:100%; background:#FEF08A;"></div>
+<div style="position:absolute; left:50%; width:50%; height:100%; background:#FECACA;"></div>
+<!-- ✅ SINGLE FILL -->
+<div style="width:{risk_val}%; height:100%; background:{risk_color}; border-radius:8px; position:absolute; left:0; z-index:2;"></div>
+<!-- MARKER -->
+<div style="position:absolute; left:{risk_val}%; top:-3px; width:2px; height:14px; background:#000; z-index:3;"></div>
+</div>
+<div class="vs-risk-score" style="color:{risk_color}; font-weight:700; font-size:1.1rem;">
+{risk_val}
+</div>
+</div>
+""", unsafe_allow_html=True)
                 
                 st.markdown("""
                 <div class="risk-legend">
