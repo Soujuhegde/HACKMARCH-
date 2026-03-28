@@ -373,7 +373,6 @@ if not st.session_state.get('seen_onboarding', False):
     ''', unsafe_allow_html=True)
     if st.button("I've read this, take me in", key="onboarding_done"):
         st.session_state['seen_onboarding'] = True
-        st.rerun()
 
 # ─────────────────────────────────────────────
 # LOADING MICRO-ANIMATION
@@ -418,7 +417,7 @@ def render_slider_feedback(value, min_val, max_val, status_label, status_color, 
 # TABS
 # ─────────────────────────────────────────────
 if not st.session_state.analyzed:
-    tabs = st.tabs(["🧬 Health Input"])
+    tabs = st.tabs(["🧬 Health Input"], key="main_tabs")
     tab1 = tabs[0]
     tab2 = tab3 = tab4 = tab5 = None
 else:
@@ -428,7 +427,7 @@ else:
         "📈 Future Projection",
         "🎯 Action Plan",
         "💬 AI Assistant",
-    ])
+    ], key="main_tabs")
 
 # ═══════════════════════════════════
 # TAB 1 — HEALTH INPUT
@@ -449,7 +448,6 @@ with tab1:
     with col_import_1:
          if st.button("🚀 Load Sample Profile (Riya, 32)", type="secondary", width='stretch'):
              load_sample()
-             st.rerun()
     with col_import_2:
          st.button("📲 Import from Wearables", help="Connect Google Fit or Apple Health (Simulated)", width='stretch')
 
@@ -874,18 +872,33 @@ if tab3 is not None:
                                                  "exercise_min_week": sim_exercise})
 
             with st.expander("Scenario Comparison (save up to 3 scenarios)", expanded=True):
-                slot_label = st.text_input("Scenario name", value=f"Scenario {len(st.session_state.saved_scenarios) + 1}", key="scenario_name")
+                next_idx = len(st.session_state.saved_scenarios) + 1
+                if "scenario_name" not in st.session_state:
+                    st.session_state["scenario_name"] = f"Scenario {next_idx}"
+                if "scenario_name_next" in st.session_state:
+                    st.session_state["scenario_name"] = st.session_state.pop("scenario_name_next")
+
+                slot_label = st.text_input("Scenario name", value=st.session_state.get("scenario_name", f"Scenario {next_idx}"), key="scenario_name")
                 if st.button("Save scenario", key="save_scenario_button"):
                     if len(st.session_state.saved_scenarios) >= 3:
                         st.warning("Max 3 scenarios saved. Remove one to add another.")
                     else:
+                        label_for_save = slot_label.strip() or f"Scenario {next_idx}"
+                        # Ensure unique naming
+                        existing = [s["label"] for s in st.session_state.saved_scenarios]
+                        if label_for_save in existing:
+                            label_for_save = f"Scenario {next_idx}"
+
                         st.session_state.saved_scenarios.append({
-                            "label": slot_label,
+                            "label": label_for_save,
                             "metrics": {**metrics, "sleep_hours": sim_sleep, "steps_per_day": sim_steps,
                                         "stress_level": sim_stress, "diet_quality": sim_diet,
                                         "exercise_min_week": sim_exercise}
                         })
-                        st.rerun()
+
+                        # Pre-fill next scenario name for the next render
+                        next_idx = len(st.session_state.saved_scenarios) + 1
+                        st.session_state["scenario_name_next"] = f"Scenario {next_idx}"
 
                 saved_labels = [s["label"] for s in st.session_state.saved_scenarios]
                 selected_scenarios = st.multiselect("Compare saved scenarios", saved_labels, default=saved_labels)
@@ -1129,7 +1142,6 @@ if tab4 is not None:
             with col_re:
                 if st.button("🔄 Re-analyse with New Data", key="reanalyse_new_data", width='stretch'):
                     st.session_state.analyzed = False
-                    st.rerun()
 
                 pdf_bytes = bytes(create_pdf_report(st.session_state.metrics, st.session_state.results))
                 st.download_button(
