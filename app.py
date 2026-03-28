@@ -332,8 +332,8 @@ st.markdown(f"""
   </div>
   <div style="display:flex;align-items:center;gap:10px;">
     <span class="vs-header-badge">💗 AI for Longevity</span>
-    <span style="color:#334155;font-size:0.85rem;">Last updated: {last_updated_value}</span>
-    <form action="#" style="display:inline;">
+  <!--  <span style="color:#334155;font-size:0.85rem;">Last updated: {last_updated_value}</span> -->
+  <!--  <form action="#" style="display:inline;">
       <button type="button" id="recalculate-btn" style="border:none;background:#4338CA;color:white;border-radius:10px;padding:6px 12px;cursor:pointer;">🔄 Recalculate</button>
     </form>
   </div>
@@ -343,8 +343,8 @@ st.markdown(f"""
   if (recalc) {{
     recalc.onclick = () => {{ window.location.reload(); }};
   }}
-</script>
-""", unsafe_allow_html=True)
+</script> -->
+ """, unsafe_allow_html=True)
 st.session_state['last_updated'] = last_updated_value
 
 
@@ -417,7 +417,7 @@ def render_slider_feedback(value, min_val, max_val, status_label, status_color, 
 # TABS
 # ─────────────────────────────────────────────
 if not st.session_state.analyzed:
-    tabs = st.tabs(["🧬 Health Input"], key="main_tabs")
+    tabs = st.tabs(["🧬 Health Input"])
     tab1 = tabs[0]
     tab2 = tab3 = tab4 = tab5 = None
 else:
@@ -427,7 +427,7 @@ else:
         "📈 Future Projection",
         "🎯 Action Plan",
         "💬 AI Assistant",
-    ], key="main_tabs")
+    ])
 
 # ═══════════════════════════════════
 # TAB 1 — HEALTH INPUT
@@ -446,10 +446,10 @@ with tab1:
 
     col_import_1, col_import_2 = st.columns([1, 1])
     with col_import_1:
-         if st.button("🚀 Load Sample Profile (Riya, 32)", type="secondary", width='stretch'):
+         if st.button("🚀 Load Sample Profile (Riya, 32)", type="secondary", use_container_width=True):
              load_sample()
     with col_import_2:
-         st.button("📲 Import from Wearables", help="Connect Google Fit or Apple Health (Simulated)", width='stretch')
+         st.button("📲 Import from Wearables", help="Connect Google Fit or Apple Health (Simulated)", use_container_width=True)
 
     col1, col2, col3 = st.columns(3, gap="medium")
 
@@ -597,7 +597,7 @@ with tab1:
     st.markdown("<br>", unsafe_allow_html=True)
     _, col_btn, _ = st.columns([1, 2, 1])
     with col_btn:
-        analyze = st.button("🧬  Calculate My Biological Age →", width='stretch')
+        analyze = st.button("🧬  Calculate My Biological Age →", use_container_width=True)
 
     if analyze:
         metrics = {
@@ -731,7 +731,7 @@ if tab2 is not None:
                         showarrow=False, font=dict(size=12, color="#64748B")
                     )]
                 )
-                st.plotly_chart(fig_gauge, width='stretch')
+                # st.plotly_chart(fig_gauge, use_container_width=True)
 
                 # Radar chart — pastel palette
                 breakdown  = bio["breakdown"]
@@ -770,7 +770,7 @@ if tab2 is not None:
                     showlegend=True, height=340,
                     margin=dict(t=30, b=30, l=60, r=60),
                 )
-                st.plotly_chart(fig_radar, width='stretch')
+                # st.plotly_chart(fig_radar, use_container_width=True)
 
                 st.markdown("<br>", unsafe_allow_html=True)
                 st.markdown("### 🧬 What's driving my age?")
@@ -826,24 +826,23 @@ if tab3 is not None:
             proj    = st.session_state.results["projection"]
             metrics = st.session_state.metrics
 
-            if "saved_scenarios" not in st.session_state:
-                st.session_state["saved_scenarios"] = []
-
             st.markdown('<div class="vs-label">THE TIME MACHINE</div>', unsafe_allow_html=True)
             st.markdown('<div class="vs-title">Your Health in 2035</div>', unsafe_allow_html=True)
 
             habit_label = proj.get("best_habit_label", "improve sleep")
-            best_text = f"{habit_label} → saves {proj['age_savings']} biological years by 2035 → cuts cardiovascular risk by {proj['cardio_risk_reduction']} points."
+            best_text = f"{habit_label.capitalize()} → saves {proj['age_savings']} biological years by 2035"
             st.markdown(f"""
-            <div class="vs-best-change-sticky">
-              <div class="vs-insight-title">💡 Single Best Change</div>
-              <div style="color:var(--text-dark);">{best_text}</div>
-              <div class="subline">Top opportunity pinned for 10-year impact</div>
+            <div class="vs-best-change-sticky" style="margin-bottom: 25px; border-left-color: #A78BFA; background: rgba(167, 139, 250, 0.05);">
+              <div class="vs-insight-title" style="color: #6D28D9; font-size: 1.1rem; margin-bottom: 5px;">💡 Single Best Change</div>
+              <div style="color: var(--text-dark); font-size: 1.05rem;"><strong>{best_text}</strong></div>
+              <div class="subline" style="margin-top: 5px; color: #64748B;">Top opportunity pinned for massive 10-year impact</div>
             </div>
             """, unsafe_allow_html=True)
 
-            st.markdown("**🔧 Simulate Habit Changes**")
-            col1, col2 = st.columns(2)
+            st.markdown("### 🔧 Custom Habit Simulator")
+            st.markdown("<p style='color:#6B6B8A; margin-bottom:15px;'>Adjust these habits to dynamically preview how much younger you could be in 10 years:</p>", unsafe_allow_html=True)
+            
+            col1, col2 = st.columns(2, gap="large")
             with col1:
                 sim_sleep = st.slider("Sleep hours", 3.0, 12.0, float(metrics["sleep_hours"]), 0.5, key="sim_sleep")
                 sim_steps = st.slider("Daily steps", 0, 20000, metrics["steps_per_day"], 500, key="sim_steps")
@@ -852,142 +851,43 @@ if tab3 is not None:
                 sim_diet = st.slider("Diet quality", 1, 10, metrics["diet_quality"], 1, key="sim_diet")
                 sim_exercise = st.slider("Exercise min/week", 0, 600, metrics["exercise_min_week"], 5, key="sim_exercise")
 
-            base_opt_end = proj["optimized_bio_ages"][-1]
-            def trend_delta(new_val, key_name):
-                scenario = {**metrics, "sleep_hours": sim_sleep, "steps_per_day": sim_steps, "stress_level": sim_stress, "diet_quality": sim_diet, "exercise_min_week": sim_exercise}
-                scenario[key_name] = new_val
-                p = project_health_trajectory(scenario)
-                diff = round(p["optimized_bio_ages"][-1] - base_opt_end, 1)
-                arrow = "⬇" if diff < 0 else "⬆" if diff > 0 else "→"
-                return f"{arrow} {diff:+.1f} bio years"
 
-            st.markdown(f"<div class='step-delta'>Sleep delta: {trend_delta(sim_sleep, 'sleep_hours')}</div>", unsafe_allow_html=True)
-            st.markdown(f"<div class='step-delta'>Steps delta: {trend_delta(sim_steps, 'steps_per_day')}</div>", unsafe_allow_html=True)
-            st.markdown(f"<div class='step-delta'>Stress delta: {trend_delta(sim_stress, 'stress_level')}</div>", unsafe_allow_html=True)
-            st.markdown(f"<div class='step-delta'>Diet delta: {trend_delta(sim_diet, 'diet_quality')}</div>", unsafe_allow_html=True)
-            st.markdown(f"<div class='step-delta'>Exercise delta: {trend_delta(sim_exercise, 'exercise_min_week')}</div>", unsafe_allow_html=True)
 
             sim_proj = project_health_trajectory({**metrics, "sleep_hours": sim_sleep, "steps_per_day": sim_steps,
                                                  "stress_level": sim_stress, "diet_quality": sim_diet,
                                                  "exercise_min_week": sim_exercise})
 
-            with st.expander("Scenario Comparison (save up to 3 scenarios)", expanded=True):
-                next_idx = len(st.session_state.saved_scenarios) + 1
-                if "scenario_name" not in st.session_state:
-                    st.session_state["scenario_name"] = f"Scenario {next_idx}"
-                if "scenario_name_next" in st.session_state:
-                    st.session_state["scenario_name"] = st.session_state.pop("scenario_name_next")
 
-                slot_label = st.text_input("Scenario name", value=st.session_state.get("scenario_name", f"Scenario {next_idx}"), key="scenario_name")
-                if st.button("Save scenario", key="save_scenario_button"):
-                    if len(st.session_state.saved_scenarios) >= 3:
-                        st.warning("Max 3 scenarios saved. Remove one to add another.")
-                    else:
-                        label_for_save = slot_label.strip() or f"Scenario {next_idx}"
-                        # Ensure unique naming
-                        existing = [s["label"] for s in st.session_state.saved_scenarios]
-                        if label_for_save in existing:
-                            label_for_save = f"Scenario {next_idx}"
 
-                        st.session_state.saved_scenarios.append({
-                            "label": label_for_save,
-                            "metrics": {**metrics, "sleep_hours": sim_sleep, "steps_per_day": sim_steps,
-                                        "stress_level": sim_stress, "diet_quality": sim_diet,
-                                        "exercise_min_week": sim_exercise}
-                        })
+            st.markdown("<br>", unsafe_allow_html=True)
+            st.markdown("### 🔮 Your 10-Year Outcome Dashboard")
+            st.markdown("<p style='color:#6B6B8A; margin-bottom:20px;'>If you stick to your newly adjusted habits above over the next 10 years, here is your trajectory:</p>", unsafe_allow_html=True)
 
-                        # Pre-fill next scenario name for the next render
-                        next_idx = len(st.session_state.saved_scenarios) + 1
-                        st.session_state["scenario_name_next"] = f"Scenario {next_idx}"
-
-                saved_labels = [s["label"] for s in st.session_state.saved_scenarios]
-                selected_scenarios = st.multiselect("Compare saved scenarios", saved_labels, default=saved_labels)
-
-            calendar_years = [2026 + y for y in proj["years"]]
-
-            fig_proj = go.Figure()
-            fig_proj.add_trace(go.Scatter(
-                x=calendar_years, y=proj["current_bio_ages"], name="Current Path",
-                line=dict(color="#F87171", width=3, dash="dash"), fill="tozeroy", fillcolor="rgba(248,113,113,0.05)"
-            ))
-            fig_proj.add_trace(go.Scatter(
-                x=calendar_years, y=sim_proj["optimized_bio_ages"], name="Optimised Path",
-                line=dict(color="#A78BFA", width=3), fill="tozeroy", fillcolor="rgba(167,139,250,0.08)"
-            ))
-
-            scenario_colors = ["#FBBF24", "#3B82F6", "#8B5CF6"]
-            for i, label in enumerate(selected_scenarios):
-                scenario = next((s for s in st.session_state.saved_scenarios if s["label"] == label), None)
-                if scenario:
-                    scenario_proj = project_health_trajectory(scenario["metrics"])
-                    fig_proj.add_trace(go.Scatter(
-                        x=calendar_years, y=scenario_proj["optimized_bio_ages"], name=f"{label}",
-                        line=dict(color=scenario_colors[i], width=2, dash="dot")
-                    ))
-
-            fig_proj.add_vline(x=2026, line_dash="dot", line_color="#4338CA", opacity=0.85)
-            fig_proj.add_annotation(x=2026, y=max(sim_proj["optimized_bio_ages"][0], proj["current_bio_ages"][0]) + 1.4,
-                                     text="TODAY", showarrow=False, font=dict(color="#4338CA", size=11))
-
-            year4_risk = sim_proj["optimized_cardio_risk"][4]
-            milestone_text = "🎯 Heart risk drops below 20 at Year 4" if year4_risk < 20 else f"🎯 Heart risk is {year4_risk} at Year 4"
-            fig_proj.add_annotation(x=2030, y=sim_proj["optimized_bio_ages"][4], text=milestone_text,
-                                     showarrow=True, arrowhead=3, arrowcolor="#059669", ax=0, ay=-45,
-                                     font=dict(size=11, color="#059669"))
-
-            y_max = max(max(proj["current_bio_ages"]), max(sim_proj["optimized_bio_ages"]), 35)
-            fig_proj.update_layout(
-                title=dict(text="Biological Age Projection (10 Years)", font=dict(color="#A0A0BA", size=13)),
-                paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(248,246,255,0.8)",
-                font=dict(color="#6B6B8A", family="Nunito Sans"),
-                xaxis=dict(title="Calendar year", tickmode="array", tickvals=calendar_years, ticktext=[str(y) for y in calendar_years],
-                           gridcolor="rgba(167,139,250,0.12)", color="#A0A0BA"),
-                yaxis=dict(title="Biological Age", range=[25, y_max], gridcolor="rgba(167,139,250,0.12)", color="#A0A0BA"),
-                legend=dict(bgcolor="rgba(0,0,0,0)", font=dict(color="#6B6B8A")),
-                height=360, margin=dict(t=60, b=60, l=50, r=30),
-            )
-            st.plotly_chart(fig_proj, width='stretch')
-
-            # Cardio risk bar chart
-            fig_cardio = go.Figure()
-            fig_cardio.add_trace(go.Bar(
-                x=calendar_years[::2], y=proj["current_cardio_risk"][::2], name="Current Risk", marker_color="rgba(248,113,113,0.65)"
-            ))
-            fig_cardio.add_trace(go.Bar(
-                x=calendar_years[::2], y=sim_proj["optimized_cardio_risk"][::2], name="Optimised Risk", marker_color="rgba(167,139,250,0.65)"
-            ))
-            fig_cardio.add_vline(x=2026, line_dash="dot", line_color="#4338CA", opacity=0.85)
-            fig_cardio.update_layout(
-                title=dict(text="Cardiovascular Risk Score (0–100)", font=dict(color="#A0A0BA", size=13)),
-                paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(248,246,255,0.8)",
-                font=dict(color="#6B6B8A", family="Nunito Sans"),
-                xaxis=dict(title="Calendar year", tickmode="array", tickvals=calendar_years[::2], ticktext=[str(y) for y in calendar_years[::2]],
-                           gridcolor="rgba(167,139,250,0.12)", color="#A0A0BA"),
-                yaxis=dict(title="Risk Score", range=[0, 100], gridcolor="rgba(167,139,250,0.12)", color="#A0A0BA"),
-                legend=dict(bgcolor="rgba(0,0,0,0)", font=dict(color="#6B6B8A")),
-                barmode="group", height=320, margin=dict(t=60, b=60, l=50, r=30),
-            )
-            st.plotly_chart(fig_cardio, width='stretch')
-
-            st.markdown("<p style='font-size:0.85rem;color:#64748B;margin-top:12px;'>Projections based on epidemiological models from the Framingham Heart Study and UK Biobank data.</p>", unsafe_allow_html=True)
-
-            m1, m2, m3, m4 = st.columns(4)
-            for col, (label, val, unit, color) in zip(
-                [m1, m2, m3, m4],
-                [
-                    ("Bio Age Now",              str(proj["current_result"]["biological_age"]),        "years",        "#FF6B8A"),
-                    ("Bio Age in 10y (current)", str(proj["current_bio_ages"][-1]),                   "years",        "#F87171"),
-                    ("Bio Age in 10y (opt.)",    str(sim_proj["optimized_bio_ages"][-1]),             "years",        "#10B981"),
-                    ("Years Saved",              str(round(proj["current_bio_ages"][-1] - sim_proj["optimized_bio_ages"][-1], 1)), "years younger", "#FBBF24"),
-                ],
-            ):
-                with col:
-                    st.markdown(f"""
-                    <div class="vs-metric">
-                      <div class="vs-metric-label">{label}</div>
-                      <div class="vs-metric-val" style="color:{color};">{val}</div>
-                      <div class="vs-metric-unit">{unit}</div>
-                    </div>""", unsafe_allow_html=True)
+            m1, m2, m3 = st.columns(3, gap="medium")
+            with m1:
+                st.markdown(f"""
+                <div class="vs-metric" style="background:rgba(248,113,113,0.03); border:1px solid rgba(248,113,113,0.15); height:100%; border-radius:12px; padding:18px;">
+                  <div class="vs-metric-label" style="font-size:0.95rem; font-weight:700; color:#475569; margin-bottom:8px;">Current Path</div>
+                  <div class="vs-metric-val" style="color:#F87171; font-size:2.8rem; line-height:1;">{proj["current_bio_ages"][-1]}</div>
+                  <div class="vs-metric-unit" style="margin-top:12px; color:#64748B;">biological years old</div>
+                </div>""", unsafe_allow_html=True)
+            with m2:    
+                st.markdown(f"""
+                <div class="vs-metric" style="background:rgba(16,185,129,0.03); border:1px solid rgba(16,185,129,0.15); height:100%; border-radius:12px; padding:18px;">
+                  <div class="vs-metric-label" style="font-size:0.95rem; font-weight:700; color:#475569; margin-bottom:8px;">New Simulated Path</div>
+                  <div class="vs-metric-val" style="color:#10B981; font-size:2.8rem; line-height:1;">{sim_proj["optimized_bio_ages"][-1]}</div>
+                  <div class="vs-metric-unit" style="margin-top:12px; color:#64748B;">biological years old</div>
+                </div>""", unsafe_allow_html=True)
+            with m3:
+                years_saved = round(proj["current_bio_ages"][-1] - sim_proj["optimized_bio_ages"][-1], 1)
+                st.markdown(f"""
+                <div class="vs-metric" style="background:rgba(251,191,36,0.06); border:2px solid rgba(251,191,36,0.35); height:100%; border-radius:12px; padding:18px; box-shadow: 0 4px 12px rgba(251,191,36,0.1);">
+                  <div class="vs-metric-label" style="font-size:0.95rem; font-weight:800; color:#B45309; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">Total Time Saved</div>
+                  <div class="vs-metric-val" style="color:#D97706; font-size:3.2rem; line-height:1;">{years_saved}</div>
+                  <div class="vs-metric-unit" style="font-weight:700; color:#B45309; margin-top:12px;">years younger</div>
+                </div>""", unsafe_allow_html=True)
+                
+            st.markdown("<br><p style='font-size:0.85rem;color:#94A3B8;margin-top:12px; text-align:center;'>Projections are based on epidemiological models from the Framingham Heart Study and UK Biobank data.</p>", unsafe_allow_html=True)
 
 # ═══════════════════════════════════
 # TAB 4 — ACTION PLAN
@@ -1126,7 +1026,7 @@ if tab4 is not None:
                     )
                     fig_scatter.add_shape(type="line", x0=1.5, y0=0, x1=1.5, y1=10, line=dict(color="#4C1D95", dash="dot"))
                     fig_scatter.add_shape(type="line", x0=0.5, y0=5, x1=3.5, y1=5, line=dict(color="#4C1D95", dash="dot"))
-                    st.plotly_chart(fig_scatter, width='stretch')
+                    # st.plotly_chart(fig_scatter, use_container_width=True)
 
                 st.markdown('<div class="vs-plan-box"><div class="vs-plan-title">📋 This Week\'s Micro-Plan</div>', unsafe_allow_html=True)
                 for rec in unique_recs[:3]:
@@ -1140,7 +1040,7 @@ if tab4 is not None:
             st.markdown("<br>", unsafe_allow_html=True)
             _, col_re, _ = st.columns([1, 2, 1])
             with col_re:
-                if st.button("🔄 Re-analyse with New Data", key="reanalyse_new_data", width='stretch'):
+                if st.button("🔄 Re-analyse with New Data", key="reanalyse_new_data", use_container_width=True):
                     st.session_state.analyzed = False
 
                 pdf_bytes = bytes(create_pdf_report(st.session_state.metrics, st.session_state.results))
@@ -1150,7 +1050,7 @@ if tab4 is not None:
                     data=pdf_bytes,
                     file_name=f"InsightCare_Report_{datetime.now().strftime('%Y%m%d')}.pdf",
                     mime="application/pdf",
-                    width='stretch'
+                    use_container_width=True
                 )
 
 
