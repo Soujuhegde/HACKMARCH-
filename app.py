@@ -32,9 +32,9 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-# ─────────────────────────────────────────────
+
 # CUSTOM CSS — VitalSense Pastel / Light Theme
-# ─────────────────────────────────────────────
+
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap');
