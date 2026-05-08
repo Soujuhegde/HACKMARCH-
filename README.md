@@ -2,7 +2,6 @@
 
 **InsightCare** is a cutting-edge, data-driven health platform designed to help users understand their "real" biological age and take actionable steps toward a longer, healthier life. By combining advanced clinical methodologies with state-of-the-art AI, InsightCare transforms complex biomarkers into clear, personalized longevity strategies.
 
----
 
 ## 🚀 Key Features
 
@@ -28,7 +27,6 @@ Built with reliability at its core. Our **Validation Engine** includes:
 - **Clinical Warnings**: Detects medical risks like Hypertension or Tachycardia.
 - **Confidence Scoring**: A transparent score (0–100%) indicating the reliability of your health predictions.
 
----
 
 ## 🛠️ Technology Stack
 
@@ -37,7 +35,6 @@ Built with reliability at its core. Our **Validation Engine** includes:
 - **Visualization**: [Plotly](https://plotly.com/) for interactive charts and longevity projections.
 - **Data Engine**: Pandas and NumPy for complex biomarker analysis and risk scoring.
 
----
 
 ## 💻 Getting Started
 
@@ -68,10 +65,7 @@ Built with reliability at its core. Our **Validation Engine** includes:
     streamlit run app.py
     ```
 
----
-
 ## 👩‍💻 Authors
 Developed with passion for **HACKMARCH- 2026**.
 
----
 *Disclaimer: InsightCare is an educational tool for longevity and wellness. It is not a substitute for professional medical advice, diagnosis, or treatment.*
